@@ -4,7 +4,7 @@
 
 **Emotional Alchemy — Transform Pain into Art**
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-gold.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-gold.svg)](LICENSE)
 
 [Live Demo](https://echoes-emotion.vercel.app/) • [Report Bug](https://github.com/Wydoinn/ECHOES/issues) • [Request Feature](https://github.com/Wydoinn/ECHOES/issues)
 
@@ -172,7 +172,7 @@ ECHOES is **not a substitute for professional mental health care**. If you're in
 
 ## 📄 License
 
-Apache License 2.0 — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 
 <div align="center">
