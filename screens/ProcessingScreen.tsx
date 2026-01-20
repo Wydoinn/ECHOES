@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI, Type } from "@google/genai";
-import { EmotionalData, TransformationResult, SafetyAssessment } from '../types';
+import { EmotionalData, TransformationResult, SafetyAssessment, AIResponseStyle } from '../types';
 import AlchemicalVortex, { RitualPhase } from '../components/AlchemicalVortex';
 import MagneticButton from '../components/MagneticButton';
 import CrisisSupportOverlay from '../components/CrisisSupportOverlay';
@@ -11,6 +11,8 @@ import { useSound } from '../components/SoundManager';
 import { haptics } from '../utils/haptics';
 import { getTimeContext } from '../utils/timeAwareness';
 import { sessionMemory } from '../utils/sessionMemory';
+import { styleSystemInstructions } from '../components/AIResponseStyleSelector';
+import { apiKeyManager } from '../utils/apiKeyManager';
 
 interface ProcessingScreenProps {
   data: EmotionalData;
@@ -19,6 +21,7 @@ interface ProcessingScreenProps {
   onRestart: () => void;
   isDemoMode: boolean;
   reducedMotion?: boolean;
+  aiResponseStyle?: AIResponseStyle;
 }
 
 const steps = [
@@ -36,12 +39,12 @@ const waitingMessages = [
   "Harmonizing the echo..."
 ];
 
-const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, onCancel, onRestart, isDemoMode, reducedMotion = false }) => {
+const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, onCancel, onRestart, isDemoMode, reducedMotion = false, aiResponseStyle = 'poetic' }) => {
   const [phase, setPhase] = useState<RitualPhase>('shatter');
-  const [currentText, setCurrentText] = useState(""); 
+  const [currentText, setCurrentText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showCrisisOverlay, setShowCrisisOverlay] = useState(false);
-  
+
   // Refs for logic synchronization
   const apiResultRef = useRef<TransformationResult | null>(null);
   const isApiCompleteRef = useRef(false);
@@ -83,11 +86,11 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
   useEffect(() => {
     let timeoutIds: ReturnType<typeof setTimeout>[] = [];
     let waitingInterval: ReturnType<typeof setInterval>;
-    
+
     // 1. SHATTER (0s) - Visuals only first
     if (!reducedMotion) playWhoosh();
     setPhase('shatter');
-    
+
     // DELAY TEXT APPEARANCE (2.5s)
     timeoutIds.push(setTimeout(() => {
         // If safety check failed already, don't show text
@@ -110,11 +113,11 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
             clearInterval(waitingInterval);
             return;
         }
-        
+
         if (isApiCompleteRef.current) {
             clearInterval(checkApiInterval);
             clearInterval(waitingInterval);
-            
+
             // Transition to Coalesce
             setPhase('coalesce');
             setCurrentText(steps[2]);
@@ -138,7 +141,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
 
             }, 3000));
         }
-    }, 1000); 
+    }, 1000);
 
     // Waiting Text Cycle (Starts after 8.5s if not done)
     timeoutIds.push(setTimeout(() => {
@@ -170,16 +173,22 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
             setTimeout(() => {
                 apiResultRef.current = DEMO_RESULT;
                 isApiCompleteRef.current = true;
-            }, 5000); 
+            }, 5000);
             return;
         }
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
+            // Get API key from user's stored key
+            const userApiKey = apiKeyManager.getApiKey();
+            if (!userApiKey) {
+              throw new Error("No API key configured. Please add your Gemini API key in settings.");
+            }
+
+            const ai = new GoogleGenAI({ apiKey: userApiKey });
+
             // --- CONSTRUCT PARTS ---
             const parts: any[] = [];
-            
+
             // Include image analysis in the prompt context if available
             let imageContextString = "";
             if (data.imageAnalysis) {
@@ -189,7 +198,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
                 - Emotional Tone: ${data.imageAnalysis.emotionalTone}
                 - Key Symbols: ${data.imageAnalysis.symbols.join(', ')}
                 - Potential Meaning: ${data.imageAnalysis.possibleMeaning}
-                
+
                 IMPORTANT: Your reflection MUST acknowledge this image specifically. Reference the visual details provided above to show deep understanding.
                 `;
             }
@@ -211,7 +220,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
                 - This is session #${sessionInsight.totalSessions + 1} for this user.
                 - Last visit was ${sessionInsight.daysSinceLastVisit} days ago.
                 - Last topic they explored: "${sessionInsight.lastCategoryTitle}".
-                
+
                 INSTRUCTION: Subtly acknowledge their return and continued courage in 1 sentence within the "reflection" (e.g., "Your return to this space honors the work you have already begun..."). Do not be repetitive or robotic about it.
                 `;
             }
@@ -228,7 +237,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
                 ${audioTranscriptionContext}
               `
             });
-            
+
             let hasAudio = false;
             if (data.audio) {
               const audioPart = await fileToPart(data.audio, data.audio.type);
@@ -252,7 +261,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
 
             // --- STEP 1: SAFETY CHECK ---
             const safetyResponse = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-3-flash-preview',
                 contents: { parts: parts },
                 config: {
                     systemInstruction: `You are a safety triage system for an emotional release app called ECHOES.
@@ -289,7 +298,7 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
             });
 
             const safetyResult = JSON.parse(safetyResponse.text || "{}") as SafetyAssessment;
-            
+
             if (safetyResult.showCrisisOverlay || safetyResult.riskLevel === 'high') {
                 isUnsafeRef.current = true;
                 setShowCrisisOverlay(true);
@@ -297,7 +306,7 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
             }
 
             // --- STEP 2: RITUAL GENERATION (Only if safe) ---
-            
+
             // Get Time Context for Ritual
             const timeContext = getTimeContext();
 
@@ -366,7 +375,7 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
                 audioInstruction = `
 7. "audioInsight" (Object):
    - Listen to the user's vocal qualities (tone, pace, hesitation, tremor, silence) AND analyze the words they spoke (transcription provided in context).
-   - "toneSummary": 2-3 sentences poetically describing HOW they spoke (e.g., "shaky but determined", "quiet exhaustion"). 
+   - "toneSummary": 2-3 sentences poetically describing HOW they spoke (e.g., "shaky but determined", "quiet exhaustion").
    - "wordSummary": 2-3 sentences analyzing WHAT they said (vocabulary choice, repeated phrases, underlying themes in the text).
    - "suggestedLabel": A 2-3 word poetic tag for their overall energy (e.g., "Trembling Courage", "Soft Resolve").
 `;
@@ -384,13 +393,16 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
 
             // STREAMING REQUEST
             const ritualStream = await ai.models.generateContentStream({
-              model: 'gemini-3-pro-preview', 
+              model: 'gemini-3-flash-preview',
               contents: { parts: parts },
               config: {
                 systemInstruction: `You are ECHOES, an advanced emotional intelligence engine designed to facilitate deep psychological release and closure. You are an expert therapist, poet, and abstract artist.
 
+VOICE STYLE DIRECTIVE:
+${styleSystemInstructions[aiResponseStyle]}
+
 YOUR MISSION:
-Synthesize ALL provided user inputs (text, voice, drawings, documents, images) into a single, cohesive emotional profile and generate a profound, healing response.
+Synthesize ALL provided user inputs (text, voice, drawings, documents, images) into a single, cohesive emotional profile and generate a profound, healing response using your designated voice style.
 
 TIME CONTEXT: The user is accessing ECHOES during ${timeContext.period} (${new Date().toLocaleTimeString()}).
 Incorporate this into your response subtly:
@@ -399,8 +411,8 @@ Incorporate this into your response subtly:
 
 OUTPUT REQUIREMENTS (JSON):
 
-1. "reflection" (100-150 words): 
-   - A mirror to their soul. 
+1. "reflection" (100-150 words):
+   - A mirror to their soul.
    - Explicitly acknowledge specific details from their inputs to show deep understanding.
    - Validate their feeling without cliché.
    - Style: Deep, poetic, empathetic.
@@ -451,17 +463,31 @@ Generate valid JSON only.`,
             for await (const chunk of ritualStream) {
                 fullText += chunk.text || '';
             }
-      
+
             if (!fullText) throw new Error("No response from AI");
-            
+
             const resultJson = JSON.parse(fullText) as TransformationResult;
-            
+
             apiResultRef.current = resultJson;
             isApiCompleteRef.current = true;
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Gemini Error:", err);
-            setError("The stars are misaligned. We couldn't process your ritual right now.");
+
+            // Provide more helpful error messages
+            let errorMessage = "The stars are misaligned. We couldn't process your ritual right now.";
+
+            if (err.message?.includes('API key')) {
+              errorMessage = "Please configure your Gemini API key in settings to continue.";
+            } else if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('rate')) {
+              errorMessage = "You've reached your API rate limit. Please wait a moment or upgrade your API plan.";
+            } else if (err.message?.includes('403') || err.message?.includes('permission')) {
+              errorMessage = "Your API key doesn't have permission for this model. Please check your API key.";
+            } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+              errorMessage = "Network error. Please check your connection and try again.";
+            }
+
+            setError(errorMessage);
         }
     };
 
@@ -474,35 +500,40 @@ Generate valid JSON only.`,
       isApiCompleteRef.current = false;
       apiResultRef.current = null;
       setPhase('shatter');
-      window.location.reload(); 
+      window.location.reload();
   };
 
   return (
-    <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-black">
-      
+    <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0d0617]/80">
+
       {/* Alchemical Canvas Engine - Hide if crisis overlay is active to reduce noise */}
       {!showCrisisOverlay && !reducedMotion && <AlchemicalVortex phase={phase} reducedMotion={reducedMotion} />}
-      
+
       {/* Crisis Overlay */}
       <AnimatePresence>
           {showCrisisOverlay && (
               <CrisisSupportOverlay onSeekHelp={onRestart} onBack={onCancel} />
           )}
       </AnimatePresence>
-      
+
       {/* Vignette Overlay for cinematic depth */}
       {!showCrisisOverlay && (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000000_120%)] pointer-events-none z-10 opacity-60" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0d0617_120%)] pointer-events-none z-10 opacity-60" />
       )}
 
       {/* Content Container */}
       <div className="relative z-20 flex flex-col items-center max-w-3xl px-6 w-full text-center mt-[15vh]">
-        
+
         {isDemoMode && !showCrisisOverlay && (
              <div className="absolute top-[-300px] text-[10px] uppercase tracking-[0.3em] text-pink-500/50 border border-pink-500/20 px-2 py-1 rounded">
                Demo Mode Active
              </div>
         )}
+
+        {/* Status announcements for screen readers */}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {currentText}
+        </div>
 
         <AnimatePresence mode="wait">
              {currentText && !showCrisisOverlay && !error && (
@@ -515,7 +546,7 @@ Generate valid JSON only.`,
                    className="flex flex-col items-center"
                  >
                     <div className="flex flex-col items-center space-y-4">
-                      <h2 
+                      <h2
                         className="text-2xl md:text-3xl lg:text-4xl font-serif-display font-light tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-white/80"
                         style={{ textShadow: "0 0 30px rgba(139,92,246,0.3)" }}
                       >
@@ -527,22 +558,24 @@ Generate valid JSON only.`,
         </AnimatePresence>
 
         {/* Error State */}
-        <AnimatePresence>
-            {error && !showCrisisOverlay && (
-                <motion.div 
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   className="absolute bottom-[-100px] flex flex-col items-center gap-6"
-                >
-                    <div className="bg-red-900/10 border border-red-500/20 backdrop-blur-md px-6 py-4 rounded-lg text-red-200/80 text-sm max-w-md">
-                        {error}
-                    </div>
-                    <MagneticButton onClick={handleRetry} className="px-6 py-2 text-white/60 hover:text-white border-white/10" reducedMotion={reducedMotion}>
-                        Try Again
-                    </MagneticButton>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        <div role="alert" aria-live="assertive" aria-atomic="true">
+          <AnimatePresence>
+              {error && !showCrisisOverlay && (
+                  <motion.div
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     className="absolute bottom-[-100px] flex flex-col items-center gap-6"
+                  >
+                      <div className="bg-red-900/10 border border-red-500/20 backdrop-blur-md px-6 py-4 rounded-lg text-red-200/80 text-sm max-w-md">
+                          {error}
+                      </div>
+                      <MagneticButton onClick={handleRetry} className="px-6 py-2 text-white/60 hover:text-white border-white/10" reducedMotion={reducedMotion}>
+                          Try Again
+                      </MagneticButton>
+                  </motion.div>
+              )}
+          </AnimatePresence>
+        </div>
 
       </div>
     </div>

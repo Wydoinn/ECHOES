@@ -1,0 +1,165 @@
+{
+  "app": {
+    "name": "ECHOES",
+    "tagline": "Emotionale Alchemie"
+  },
+  "landing": {
+    "subtitle": "Ein Ritual der emotionalen Alchemie",
+    "description": "Befreie, was dich belastet. Verwandle Schmerz in Kunst.",
+    "enterButton": "Beginne Deine Reise",
+    "tagline": "Wo Emotionen zu Kunst werden"
+  },
+  "categories": {
+    "title": "Was lastet auf deinem Herzen?",
+    "subtitle": "Wähle die Art deiner Last",
+    "grief": {
+      "title": "Trauer und Verlust",
+      "description": "Für das Gewicht der Abwesenheit und die Echos derer, die gegangen sind"
+    },
+    "regret": {
+      "title": "Reue und Schuld",
+      "description": "Für die nicht gegangenen Wege und die ungesagten Worte"
+    },
+    "heartbreak": {
+      "title": "Herzschmerz",
+      "description": "Für die Liebe, die verblasste, und die Verbindungen, die zerbrachen"
+    },
+    "anxiety": {
+      "title": "Angst und Furcht",
+      "description": "Für die Schatten, die drohen, und die Stürme im Inneren"
+    },
+    "anger": {
+      "title": "Wut und Groll",
+      "description": "Für das Feuer, das brennt, und die Wunden, die eitern"
+    },
+    "emptiness": {
+      "title": "Leere und Verlorener Sinn",
+      "description": "Für die Leere im Inneren und die Suche nach Bedeutung"
+    }
+  },
+  "canvas": {
+    "title": "Gieße dein Herz in diese Worte",
+    "placeholder": "Beginne zu schreiben... lass deine Emotionen frei auf diese Seite fließen. Hier gibt es kein Urteil, nur Befreiung.",
+    "wordCount": "{{count}} Wörter",
+    "addVoice": "Stimme hinzufügen",
+    "addImage": "Bild hinzufügen",
+    "addDrawing": "Zeichnen",
+    "addDocument": "Dokument hinzufügen",
+    "continueButton": "Weiter zur Transformation",
+    "analyzing": "Bild wird analysiert...",
+    "transcribing": "Transkribieren...",
+    "draftSaved": "Entwurf gespeichert",
+    "resumeDraft": "Vorherigen Entwurf fortsetzen?"
+  },
+  "breathing": {
+    "title": "Beginnen wir mit dem Atem",
+    "instruction": "Folge dem Rhythmus. Einatmen. Ausatmen. Loslassen.",
+    "inhale": "Einatmen...",
+    "hold": "Halten...",
+    "exhale": "Ausatmen...",
+    "skip": "Atemübung überspringen"
+  },
+  "processing": {
+    "steps": {
+      "shatter": "Dekonstruktion der emotionalen Resonanz...",
+      "distill": "Destillation der rohen Erinnerung...",
+      "weave": "Weben neuer Metaphern...",
+      "transmute": "Umwandlung von Schmerz in Licht..."
+    },
+    "waiting": {
+      "1": "Befragung der Sterne...",
+      "2": "Nachzeichnung der Konstellationen...",
+      "3": "Lauschen in die Leere...",
+      "4": "Sammeln von Sternenstaub...",
+      "5": "Harmonisierung des Echos..."
+    }
+  },
+  "revelation": {
+    "title": "Deine Transformation",
+    "reflection": "Reflexion",
+    "ritual": "Dein Ritual",
+    "visualMetaphor": "Visuelle Metapher",
+    "emotionalArc": "Emotionale Reise",
+    "aftercare": "Nachsorge",
+    "closureLetter": "Abschlussbrief",
+    "downloadRelic": "Reliquie herunterladen",
+    "shareCard": "Karte teilen",
+    "newJourney": "Neue Reise beginnen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "sound": "Ton",
+    "reducedMotion": "Reduzierte Bewegung",
+    "highContrast": "Hoher Kontrast",
+    "theme": "Thema",
+    "dark": "Dunkel",
+    "light": "Hell",
+    "language": "Sprache",
+    "aiVoice": "KI-Sprachstil",
+    "sentimentIndicator": "Stimmungsindikator",
+    "demoMode": "Demo-Modus"
+  },
+  "aiStyles": {
+    "poetic": {
+      "name": "Poetisch",
+      "description": "Metaphorisch, lyrisch und tief symbolisch"
+    },
+    "direct": {
+      "name": "Direkt",
+      "description": "Klar, praktisch und geradlinig"
+    },
+    "therapeutic": {
+      "name": "Therapeutisch",
+      "description": "Warmherzig, bestätigend und klinisch informiert"
+    },
+    "spiritual": {
+      "name": "Spirituell",
+      "description": "Transzendent, achtsam und mit dem Ganzen verbunden"
+    }
+  },
+  "safety": {
+    "title": "Eine Sanfte Erinnerung",
+    "message": "Diese Erfahrung lädt dich ein, tiefe Emotionen zu erforschen. Obwohl kraftvoll, ist ECHOES kein Ersatz für professionelle psychische Unterstützung.",
+    "crisisText": "Wenn du in einer Krise bist, wende dich bitte an einen Fachmann.",
+    "hotline": "Telefonseelsorge: 0800 111 0 111",
+    "proceed": "Ich Verstehe",
+    "cancel": "Zurück zur Startseite"
+  },
+  "privacy": {
+    "label": "Datenschutz & Ethik",
+    "tooltip": "Deine Emotionen sind heilig. ECHOES speichert keine Daten auf Servern, verfolgt kein Verhalten und speichert keinen Text. Alles wird in Echtzeit verarbeitet."
+  },
+  "history": {
+    "title": "Deine Reise",
+    "sessions": "Sitzungen",
+    "drafts": "Entwürfe",
+    "empty": "Noch keine Sitzungen",
+    "resume": "Fortsetzen",
+    "delete": "Löschen"
+  },
+  "analytics": {
+    "title": "Persönliche Einblicke",
+    "totalSessions": "Gesamte Sitzungen",
+    "wordsWritten": "Geschriebene Wörter",
+    "currentStreak": "Aktuelle Serie",
+    "topCategory": "Am meisten erforscht",
+    "emotionalLandscape": "Emotionale Landschaft"
+  },
+  "errors": {
+    "generic": "Etwas ist schief gelaufen",
+    "tryAgain": "Erneut versuchen",
+    "refresh": "Seite aktualisieren",
+    "apiError": "Verbindung zum Transformationsdienst nicht möglich",
+    "networkError": "Bitte überprüfe deine Internetverbindung"
+  },
+  "common": {
+    "loading": "Laden...",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "confirm": "Bestätigen"
+  }
+}

@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI, Type } from "@google/genai";
 import { useSound } from './SoundManager';
 import { SoundscapeParams } from '../types';
+import { copyShareableLinkToClipboard, parseSoundscapeFromURL } from '../utils/shareableSoundscapes';
 
 interface AmbientPlayerProps {
   emotion: string;
@@ -28,9 +29,27 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
   const [isGenerating, setIsGenerating] = useState(false);
   const [soundscapeData, setSoundscapeData] = useState<SoundscapeParams | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const hasGeneratedRef = useRef(false);
 
   useEffect(() => {
-    // Auto-generate on mount
+    // Check for shared soundscape in URL
+    const sharedSoundscape = parseSoundscapeFromURL();
+    if (sharedSoundscape) {
+      setSoundscapeData(sharedSoundscape.params);
+      startSoundscape(sharedSoundscape.params);
+      setIsPlaying(true);
+      hasGeneratedRef.current = true;
+      // Clear URL params after loading
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    // Only generate once per mount
+    if (hasGeneratedRef.current) return;
+    hasGeneratedRef.current = true;
+
     generateSoundscape();
 
     // Cleanup on unmount
@@ -40,20 +59,33 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handle share button click
+  const handleShare = async () => {
+    if (!soundscapeData) return;
+
+    const success = await copyShareableLinkToClipboard(soundscapeData, emotion, reflection);
+    setShareStatus(success ? 'copied' : 'error');
+
+    setTimeout(() => {
+      setShareStatus('idle');
+      setShowShareMenu(false);
+    }, 2000);
+  };
+
   const generateSoundscape = async () => {
     setIsGenerating(true);
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        
-        const timeoutPromise = new Promise<any>((_, reject) => 
+
+        const timeoutPromise = new Promise<any>((_, reject) =>
             setTimeout(() => reject(new Error("Timeout")), 8000)
         );
 
         const apiCall = ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-3-flash-preview',
             contents: { parts: [{
                 text: `Design an ambient soundscape for emotional healing.
-                
+
                 CONTEXT:
                 - Emotional category: ${emotion}
                 - Reflection theme: ${reflection.slice(0, 200)}...
@@ -135,18 +167,18 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
   };
 
   return (
-    <div 
+    <div
         className="fixed top-6 left-6 z-50 flex flex-col items-start gap-2"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
     >
-        <button 
+        <button
             onClick={togglePlayback}
             className={`
-                group relative flex items-center gap-3 pl-3 pr-4 py-2 rounded-full 
+                group relative flex items-center gap-3 pl-3 pr-4 py-2 rounded-full
                 border transition-all duration-500 backdrop-blur-md
-                ${isPlaying 
-                    ? 'bg-purple-900/30 border-purple-500/30 hover:border-purple-400/50' 
+                ${isPlaying
+                    ? 'bg-purple-900/30 border-purple-500/30 hover:border-purple-400/50'
                     : 'bg-white/5 border-white/10 hover:bg-white/10'
                 }
             `}
@@ -154,7 +186,7 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
             {/* Icon Visualizer */}
             <div className="relative w-6 h-6 flex items-center justify-center">
                 {isGenerating ? (
-                    <motion.div 
+                    <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                         className="w-4 h-4 border-2 border-t-transparent border-purple-300 rounded-full"
@@ -162,13 +194,13 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
                 ) : isPlaying ? (
                     <div className="flex gap-[2px] items-end h-3">
                         {[1, 2, 3, 4].map(i => (
-                            <motion.div 
+                            <motion.div
                                 key={i}
                                 animate={{ height: [4, 12, 6, 10] }}
-                                transition={{ 
-                                    duration: 0.5 + Math.random() * 0.5, 
-                                    repeat: Infinity, 
-                                    repeatType: "reverse" 
+                                transition={{
+                                    duration: 0.5 + Math.random() * 0.5,
+                                    repeat: Infinity,
+                                    repeatType: "reverse"
                                 }}
                                 className="w-[2px] bg-purple-300 rounded-full"
                             />
@@ -198,6 +230,23 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
                         <p className="text-xs text-purple-200 font-serif leading-relaxed italic">
                             "{soundscapeData.description}"
                         </p>
+
+                        {/* Share Button - Feature 12 */}
+                        <button
+                          onClick={handleShare}
+                          className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/20 text-purple-200 text-xs transition-colors"
+                        >
+                          {shareStatus === 'copied' ? (
+                            <>✓ Link Copied!</>
+                          ) : shareStatus === 'error' ? (
+                            <>✕ Failed</>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+                              Share Soundscape
+                            </>
+                          )}
+                        </button>
                     </div>
                 </motion.div>
             )}

@@ -14,7 +14,7 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
   const width = 800;
   const height = 300;
   const padding = 40;
-  
+
   // Normalize data points
   const points = arc.segments.map((seg, i) => {
     const x = padding + (i / (arc.segments.length - 1)) * (width - padding * 2);
@@ -34,11 +34,11 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
     }
 
     let d = `M ${points[0].x} ${points[0].y}`;
-    
+
     for (let i = 0; i < points.length - 1; i++) {
         const current = points[i];
         const next = points[i + 1];
-        
+
         // Simple smoothing control points
         const controlX1 = current.x + (next.x - current.x) / 3;
         const controlY1 = current.y;
@@ -59,7 +59,7 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
     <div className="w-full flex flex-col items-center">
         <div className="text-center mb-8">
             <h3 className="font-serif-display text-2xl text-white/90 mb-2">Your Emotional Arc</h3>
-            <p className="text-sm text-purple-200/60 font-light italic">"{arc.narrativeSummary}"</p>
+            <p className="text-sm text-purple-200/70 font-light italic">"{arc.narrativeSummary}"</p>
         </div>
 
         <div className="relative w-full max-w-4xl aspect-[2/1] md:aspect-[8/3]">
@@ -87,19 +87,19 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
                 <line x1={padding} y1={height/2} x2={width-padding} y2={height/2} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="5,5" />
 
                 {/* Area Fill */}
-                <motion.path 
-                    d={areaPathData} 
-                    fill="url(#areaGradient)" 
+                <motion.path
+                    d={areaPathData}
+                    fill="url(#areaGradient)"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1.5, delay: 0.5 }}
                 />
 
                 {/* Main Line */}
-                <motion.path 
-                    d={pathData} 
-                    fill="none" 
-                    stroke="url(#lineGradient)" 
+                <motion.path
+                    d={pathData}
+                    fill="none"
+                    stroke="url(#lineGradient)"
                     strokeWidth="3"
                     strokeLinecap="round"
                     filter="url(#glow)"
@@ -110,24 +110,24 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
 
                 {/* Interactive Points */}
                 {points.map((p, i) => (
-                    <g key={i} 
+                    <g key={i}
                        onMouseEnter={() => setHoveredIndex(i)}
                        onMouseLeave={() => setHoveredIndex(null)}
                        className="cursor-pointer"
                     >
                         {/* Hit Area (Invisible but larger) */}
                         <circle cx={p.x} cy={p.y} r={20} fill="transparent" />
-                        
+
                         {/* Visible Dot */}
-                        <motion.circle 
-                            cx={p.x} cy={p.y} r={4} 
+                        <motion.circle
+                            cx={p.x} cy={p.y} r={4}
                             fill={p.sentiment > 0 ? "#fbbf24" : "#8b5cf6"}
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 1.5 + i * 0.1 }}
                             whileHover={{ scale: 2 }}
                         />
-                        
+
                         {/* Active State Ring */}
                         {hoveredIndex === i && (
                             <motion.circle
@@ -152,8 +152,8 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             className="absolute bg-black/80 backdrop-blur-md border border-white/20 px-4 py-3 rounded-xl shadow-2xl flex flex-col items-center text-center w-48 z-20"
-                            style={{ 
-                                left: points[hoveredIndex].x, 
+                            style={{
+                                left: points[hoveredIndex].x,
                                 top: points[hoveredIndex].y - 20,
                                 transform: 'translate(-50%, -100%)' // Center above point
                             }}
@@ -169,9 +169,9 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc, reducedMotio
                  </AnimatePresence>
             </div>
         </div>
-        
+
         {/* Legend */}
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 3 }}

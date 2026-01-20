@@ -102,7 +102,17 @@ export interface AccessibilitySettings {
   reducedMotion: boolean;
   highContrast: boolean;
   demoMode: boolean;
+  theme: 'dark' | 'light' | 'system';
+  aiResponseStyle: 'poetic' | 'direct' | 'therapeutic' | 'spiritual';
+  sentimentIndicatorEnabled: boolean;
+  guidedJournalingEnabled: boolean;
 }
+
+// AI Response Style type
+export type AIResponseStyle = 'poetic' | 'direct' | 'therapeutic' | 'spiritual';
+
+// Theme type
+export type Theme = 'dark' | 'light' | 'system';
 
 // --- Soundscape Types ---
 export interface SoundscapeElement {

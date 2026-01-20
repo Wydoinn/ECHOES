@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import './index.css';
+import './i18n';  // Initialize i18n
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

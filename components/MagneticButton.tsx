@@ -50,24 +50,24 @@ const MagneticButton: React.FC<MagneticButtonProps> = ({ children, onClick, clas
       className={`
         relative group cursor-pointer isolate
         flex items-center justify-center
-        border border-white/10 rounded-full
+        border rounded-full
         backdrop-blur-md overflow-hidden
-        transition-all duration-300 shadow-lg
-        ${active ? 'bg-white/20 border-white/30' : 'bg-white/5 hover:bg-white/10 hover:border-white/20'}
+        transition-colors duration-500 ease-out
+        ${active ? 'bg-[#d4af37]/10 border-[#d4af37]/40 shadow-[0_0_30px_rgba(212,175,55,0.3)]' : 'bg-[rgba(255,255,255,0.05)] border-white/10 hover:border-[#d4af37]/30 hover:bg-[rgba(212,175,55,0.05)]'}
         ${className}
       `}
       data-hoverable="true"
     >
-      {/* Glow Effect (Behind Content) */}
+      {/* Premium Gold Glow Effect */}
       <motion.div
-        className={`absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-xl transition-opacity duration-500 -z-10 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+        className={`absolute inset-0 rounded-full bg-gradient-to-r from-[#d4af37]/20 via-purple-500/10 to-[#d4af37]/20 blur-xl transition-opacity duration-700 -z-10 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       />
-      
+
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center gap-2 w-full h-full">
         {children}
       </div>
-      
+
        {/* Ripple Container */}
        {!reducedMotion && (
           <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none z-0">

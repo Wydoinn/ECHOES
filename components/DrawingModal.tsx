@@ -19,10 +19,10 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
   const [color, setColor] = useState('#ff6b9d'); // Default accent pink
   const [brushSize, setBrushSize] = useState(6);
   const lastPos = useRef<{x: number, y: number} | null>(null);
-  
+
   // Track DPR for consistent scaling
   const dprRef = useRef(1);
-  
+
   // History State
   const [historyStep, setHistoryStep] = useState(0);
   const historyRef = useRef<string[]>([]);
@@ -35,21 +35,21 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
         // Handle High DPI displays
         const dpr = window.devicePixelRatio || 1;
         dprRef.current = dpr;
-        
+
         const rect = canvas.getBoundingClientRect();
-        
+
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
-        
+
         ctx.scale(dpr, dpr);
-        
-        // Initial Background fill (dark)
-        ctx.fillStyle = '#1a0b2e';
+
+        // Initial Background fill (purple theme - semi-transparent look)
+        ctx.fillStyle = '#0d0617';
         ctx.fillRect(0, 0, rect.width, rect.height);
-        
+
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
+
         // Initialize History
         const initialData = canvas.toDataURL();
         historyRef.current = [initialData];
@@ -58,36 +58,31 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
     }
   }, [isOpen]);
 
-  // Fading Loop
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    let animationId: number;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+  // Fading Loop - DISABLED to preserve stroke colors
+  // useEffect(() => {
+  //   if (!isOpen) return;
 
-    const animate = () => {
-        if (ctx && canvas && !isDrawing) { // Pause fading while drawing for smoother lines
-            // Reset shadow before clearing to avoid tinting background with previous shadow color
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
+  //   let animationId: number;
+  //   const canvas = canvasRef.current;
+  //   const ctx = canvas?.getContext('2d');
 
-            // Fading effect: Draw a semi-transparent rect over the entire canvas
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = 'rgba(26, 11, 46, 0.02)'; // Dark purple tint match background
-            
-            // Use stored DPR to match context scale
-            const width = canvas.width / dprRef.current;
-            const height = canvas.height / dprRef.current;
-            ctx.fillRect(0, 0, width, height);
-        }
-        animationId = requestAnimationFrame(animate);
-    };
+  //   const animate = () => {
+  //       if (ctx && canvas && !isDrawing) {
+  //           ctx.shadowBlur = 0;
+  //           ctx.shadowColor = 'transparent';
+  //           ctx.globalCompositeOperation = 'source-over';
+  //           ctx.fillStyle = 'rgba(28, 28, 28, 0.015)';
+  //           const width = canvas.width / dprRef.current;
+  //           const height = canvas.height / dprRef.current;
+  //           ctx.fillRect(0, 0, width, height);
+  //       }
+  //       animationId = requestAnimationFrame(animate);
+  //   };
 
-    animationId = requestAnimationFrame(animate);
+  //   animationId = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(animationId);
-  }, [isOpen, isDrawing]);
+  //   return () => cancelAnimationFrame(animationId);
+  // }, [isOpen, isDrawing]);
 
   const saveHistory = () => {
     if (!canvasRef.current) return;
@@ -119,7 +114,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     const img = new Image();
     img.src = dataUrl;
     img.onload = () => {
@@ -145,18 +140,18 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
         clientX = (e as React.MouseEvent).clientX;
         clientY = (e as React.MouseEvent).clientY;
       }
-      
+
       const x = clientX - rect.left;
       const y = clientY - rect.top;
-      
+
       // Calculate scaling factors between displayed size and backing store
       // Account for DPR scaling applied to context
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
-      return { 
-          x: (x * scaleX) / dprRef.current, 
-          y: (y * scaleY) / dprRef.current 
+
+      return {
+          x: (x * scaleX) / dprRef.current,
+          y: (y * scaleY) / dprRef.current
       };
   };
 
@@ -182,7 +177,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
     if (!ctx) return;
 
     const currentPos = getPos(e);
-    
+
     // Neon Brush Style
     ctx.strokeStyle = color;
     ctx.lineWidth = brushSize;
@@ -190,7 +185,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
     ctx.lineJoin = 'round';
     ctx.shadowBlur = 15;
     ctx.shadowColor = color;
-    
+
     ctx.beginPath();
     if (lastPos.current) {
         ctx.moveTo(lastPos.current.x, lastPos.current.y);
@@ -219,7 +214,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
             onClose();
         }
         const isCmd = e.metaKey || e.ctrlKey;
-        
+
         // Cmd+Enter: Save
         if (isCmd && e.key === 'Enter') {
             e.preventDefault();
@@ -243,18 +238,18 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0617]/70 backdrop-blur-md p-4"
         >
           <motion.div
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="relative bg-[#1a0b2e] border border-white/10 rounded-2xl p-6 shadow-2xl max-w-5xl w-full flex flex-col items-center max-h-[90vh]"
+            className="relative bg-[#0d0617]/90 border border-purple-500/20 rounded-2xl p-6 shadow-[0_20px_60px_rgba(139,92,246,0.15)] max-w-5xl w-full flex flex-col items-center max-h-[90vh]"
           >
-            <h3 className="text-2xl font-serif-display text-white mb-2">Draw Your Feeling</h3>
+            <h3 className="text-2xl font-serif-display text-white/90 mb-2">Draw Your Feeling</h3>
             <p className="text-white/40 text-sm mb-4">The strokes fade, like passing thoughts.</p>
-            
-            <div className="relative rounded-lg overflow-hidden border border-white/5 shadow-inner cursor-crosshair w-full h-full flex-1 min-h-[300px]">
+
+            <div className="relative rounded-lg overflow-hidden border border-purple-500/20 shadow-inner cursor-crosshair w-full h-full flex-1 min-h-[300px]">
               <canvas
                 ref={canvasRef}
                 onMouseDown={startDrawing}
@@ -270,22 +265,22 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
 
             {/* Controls */}
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-6 w-full px-2">
-              
+
               {/* Undo / Redo */}
               <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                  <button 
-                    onClick={undo} 
+                  <button
+                    onClick={undo}
                     disabled={historyStep <= 0}
-                    className={`p-1.5 rounded-full transition-colors ${historyStep <= 0 ? 'text-white/20' : 'text-white/80 hover:bg-white/10'}`}
+                    className={`p-1.5 rounded-full transition-colors ${historyStep <= 0 ? 'text-white/20' : 'text-white/70 hover:bg-white/10'}`}
                     title="Undo (Cmd+Z)"
                   >
                     <Icons.Undo />
                   </button>
                   <div className="w-[1px] h-4 bg-white/10" />
-                  <button 
-                    onClick={redo} 
+                  <button
+                    onClick={redo}
                     disabled={historyStep >= historyRef.current.length - 1}
-                    className={`p-1.5 rounded-full transition-colors ${historyStep >= historyRef.current.length - 1 ? 'text-white/20' : 'text-white/80 hover:bg-white/10'}`}
+                    className={`p-1.5 rounded-full transition-colors ${historyStep >= historyRef.current.length - 1 ? 'text-white/20' : 'text-white/70 hover:bg-white/10'}`}
                     title="Redo (Cmd+Shift+Z)"
                   >
                     <Icons.Redo />
@@ -307,7 +302,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
               </div>
 
               <div className="w-[1px] h-8 bg-white/20 hidden sm:block" />
-              
+
               {/* Size Slider */}
                <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
                   <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
@@ -318,7 +313,7 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
                     step="1"
                     value={brushSize}
                     onChange={(e) => setBrushSize(Number(e.target.value))}
-                    className="w-24 md:w-32 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white hover:accent-purple-300 focus:outline-none"
+                    className="w-24 md:w-32 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white hover:accent-white/80 focus:outline-none"
                     aria-label="Brush Size"
                   />
                   <div className="w-3.5 h-3.5 rounded-full bg-white/40" />
@@ -328,10 +323,10 @@ const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) 
 
               {/* Actions */}
               <div className="flex items-center gap-3">
-                  <button onClick={onClose} className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 text-white/70 transition-colors text-sm">
+                  <button onClick={onClose} className="px-5 py-2 rounded-full border border-white/20 hover:bg-white/10 text-white/60 transition-colors text-sm">
                     Cancel
                   </button>
-                  <button onClick={handleSave} className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 shadow-lg shadow-purple-900/40 transition-opacity text-sm whitespace-nowrap">
+                  <button onClick={handleSave} className="px-5 py-2 rounded-full bg-white/90 text-black hover:bg-white shadow-lg shadow-black/20 transition-opacity text-sm whitespace-nowrap font-medium">
                     Capture Moment
                   </button>
               </div>

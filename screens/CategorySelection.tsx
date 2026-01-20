@@ -26,18 +26,34 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect, reduced
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
-      
-      {/* Header */}
+
+      {/* Premium Header */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.2 }}
-        className="text-center mb-16"
+        transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="text-center mb-20"
       >
-        <h2 className="font-serif-display text-3xl md:text-5xl font-light text-white mb-4 tracking-wide">
-          Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">Release</span>
+        {/* Decorative top element */}
+        <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.5, delay: 0.5 }}
+            className="w-20 h-[1px] mx-auto mb-8 bg-gradient-to-r from-transparent via-[#d4af37]/50 to-transparent"
+        />
+
+        <h2 className="font-serif-display text-3xl md:text-5xl font-normal text-white mb-5 tracking-wide">
+          Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f4e5b2] via-[#d4af37] to-[#f4e5b2]">Release</span>
         </h2>
-        <p className="text-white/60 font-light text-lg">Select the emotion closest to your heart</p>
+        <p className="font-serif-body italic text-white/50 text-lg">Select the emotion closest to your heart</p>
+
+        {/* Decorative bottom element */}
+        <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.5, delay: 0.7 }}
+            className="w-12 h-[1px] mx-auto mt-8 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        />
       </motion.div>
 
       {/* Grid */}
@@ -52,33 +68,33 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect, reduced
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 * index }}
             >
-                <TiltCard 
+                <TiltCard
                     onClick={() => {
                         playSparkle();
                         onSelect(cat);
-                    }} 
-                    className="h-full" 
+                    }}
+                    className="h-full"
                     reducedMotion={reducedMotion}
                 >
-                <div className="flex flex-col items-center text-center space-y-4">
+                <div className="flex flex-col items-center text-center space-y-5">
                     {/* Badge for returning user favorite */}
                     {isFamiliar && (
                         <div className="absolute top-4 right-4">
-                            <span className="bg-purple-500/10 border border-purple-500/20 text-purple-200/70 text-[10px] uppercase tracking-widest px-2 py-1 rounded-full">
-                                Familiar
+                            <span className="bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#f4e5b2]/80 text-[9px] uppercase tracking-[0.2em] px-3 py-1 rounded-full font-medium">
+                                ✦ Familiar
                             </span>
                         </div>
                     )}
 
-                    <div className="text-5xl md:text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    <div className="text-5xl md:text-6xl drop-shadow-[0_0_20px_rgba(212,175,55,0.2)] group-hover:scale-110 transition-transform duration-500">
                     {cat.icon}
                     </div>
-                    
-                    <h3 className="text-2xl font-serif-display font-medium text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-white/70 group-hover:from-pink-300 group-hover:to-purple-300 transition-all duration-300">
+
+                    <h3 className="text-2xl font-serif-display font-medium text-transparent bg-clip-text bg-gradient-to-r from-white via-[#f4e5b2] to-white/70 group-hover:from-[#f4e5b2] group-hover:via-[#d4af37] group-hover:to-[#f4e5b2] transition-all duration-500">
                     {cat.title}
                     </h3>
-                    
-                    <p className="text-white/50 font-light leading-relaxed group-hover:text-white/80 transition-colors duration-300">
+
+                    <p className="font-serif-body text-white/60 font-light leading-relaxed group-hover:text-white/80 transition-colors duration-500 italic">
                     {cat.description}
                     </p>
                 </div>

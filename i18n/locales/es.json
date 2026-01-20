@@ -1,0 +1,165 @@
+{
+  "app": {
+    "name": "ECHOES",
+    "tagline": "Alquimia Emocional"
+  },
+  "landing": {
+    "subtitle": "Un ritual de alquimia emocional",
+    "description": "Libera lo que te pesa. Transforma el dolor en arte.",
+    "enterButton": "Comienza Tu Viaje",
+    "tagline": "Donde las emociones se convierten en arte"
+  },
+  "categories": {
+    "title": "¿Qué pesa sobre tu corazón?",
+    "subtitle": "Elige la naturaleza de tu carga",
+    "grief": {
+      "title": "Duelo y Pérdida",
+      "description": "Para el peso de la ausencia y los ecos de los que se fueron"
+    },
+    "regret": {
+      "title": "Arrepentimiento y Culpa",
+      "description": "Para los caminos no tomados y las palabras no dichas"
+    },
+    "heartbreak": {
+      "title": "Desamor",
+      "description": "Para el amor que se desvaneció y las conexiones que se rompieron"
+    },
+    "anxiety": {
+      "title": "Ansiedad y Miedo",
+      "description": "Para las sombras que acechan y las tormentas internas"
+    },
+    "anger": {
+      "title": "Ira y Resentimiento",
+      "description": "Para el fuego que arde y las heridas que supuran"
+    },
+    "emptiness": {
+      "title": "Vacío y Propósito Perdido",
+      "description": "Para el vacío interior y la búsqueda de significado"
+    }
+  },
+  "canvas": {
+    "title": "Vierte tu corazón en estas palabras",
+    "placeholder": "Comienza a escribir... deja que tus emociones fluyan libremente en esta página. Aquí no hay juicio, solo liberación.",
+    "wordCount": "{{count}} palabras",
+    "addVoice": "Añadir voz",
+    "addImage": "Añadir imagen",
+    "addDrawing": "Dibujar",
+    "addDocument": "Añadir documento",
+    "continueButton": "Continuar a la Transformación",
+    "analyzing": "Analizando imagen...",
+    "transcribing": "Transcribiendo...",
+    "draftSaved": "Borrador guardado",
+    "resumeDraft": "¿Retomar borrador anterior?"
+  },
+  "breathing": {
+    "title": "Comencemos con la respiración",
+    "instruction": "Sigue el ritmo. Inhala. Exhala. Libera.",
+    "inhale": "Inhala...",
+    "hold": "Mantén...",
+    "exhale": "Exhala...",
+    "skip": "Saltar ejercicio de respiración"
+  },
+  "processing": {
+    "steps": {
+      "shatter": "Deconstruyendo resonancia emocional...",
+      "distill": "Destilando memoria cruda...",
+      "weave": "Tejiendo nuevas metáforas...",
+      "transmute": "Transmutando el dolor en luz..."
+    },
+    "waiting": {
+      "1": "Consultando las estrellas...",
+      "2": "Trazando las constelaciones...",
+      "3": "Escuchando el vacío...",
+      "4": "Reuniendo polvo de estrellas...",
+      "5": "Armonizando el eco..."
+    }
+  },
+  "revelation": {
+    "title": "Tu Transformación",
+    "reflection": "Reflexión",
+    "ritual": "Tu Ritual",
+    "visualMetaphor": "Metáfora Visual",
+    "emotionalArc": "Viaje Emocional",
+    "aftercare": "Cuidado Posterior",
+    "closureLetter": "Carta de Cierre",
+    "downloadRelic": "Descargar Reliquia",
+    "shareCard": "Compartir Tarjeta",
+    "newJourney": "Comenzar Nuevo Viaje"
+  },
+  "settings": {
+    "title": "Configuración",
+    "sound": "Sonido",
+    "reducedMotion": "Movimiento Reducido",
+    "highContrast": "Alto Contraste",
+    "theme": "Tema",
+    "dark": "Oscuro",
+    "light": "Claro",
+    "language": "Idioma",
+    "aiVoice": "Estilo de Voz IA",
+    "sentimentIndicator": "Indicador de Sentimiento",
+    "demoMode": "Modo Demo"
+  },
+  "aiStyles": {
+    "poetic": {
+      "name": "Poético",
+      "description": "Metafórico, lírico y profundamente simbólico"
+    },
+    "direct": {
+      "name": "Directo",
+      "description": "Claro, práctico y sin rodeos"
+    },
+    "therapeutic": {
+      "name": "Terapéutico",
+      "description": "Cálido, validador e informado clínicamente"
+    },
+    "spiritual": {
+      "name": "Espiritual",
+      "description": "Trascendente, consciente y conectado con el todo"
+    }
+  },
+  "safety": {
+    "title": "Un Recordatorio Gentil",
+    "message": "Esta experiencia te invita a explorar emociones profundas. Aunque poderoso, ECHOES no es un sustituto del apoyo profesional de salud mental.",
+    "crisisText": "Si estás en crisis, por favor busca ayuda profesional.",
+    "hotline": "Línea de Crisis: 988",
+    "proceed": "Entiendo",
+    "cancel": "Volver al Inicio"
+  },
+  "privacy": {
+    "label": "Privacidad y Ética",
+    "tooltip": "Tus emociones son sagradas. ECHOES no almacena tus datos en servidores, no rastrea tu comportamiento ni guarda tu texto. Todo se procesa en tiempo real."
+  },
+  "history": {
+    "title": "Tu Viaje",
+    "sessions": "Sesiones",
+    "drafts": "Borradores",
+    "empty": "Aún no hay sesiones",
+    "resume": "Retomar",
+    "delete": "Eliminar"
+  },
+  "analytics": {
+    "title": "Perspectivas Personales",
+    "totalSessions": "Total de Sesiones",
+    "wordsWritten": "Palabras Escritas",
+    "currentStreak": "Racha Actual",
+    "topCategory": "Más Explorado",
+    "emotionalLandscape": "Paisaje Emocional"
+  },
+  "errors": {
+    "generic": "Algo salió mal",
+    "tryAgain": "Intentar de Nuevo",
+    "refresh": "Actualizar Página",
+    "apiError": "No se puede conectar al servicio de transformación",
+    "networkError": "Por favor verifica tu conexión a internet"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar"
+  }
+}

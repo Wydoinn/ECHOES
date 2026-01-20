@@ -37,31 +37,31 @@ const getFreq = (note: string = "A4") => {
   // Handle simple format like "C3" or "F#4"
   const regex = /^([A-G]#?)(\d)$/;
   const match = note.match(regex);
-  
+
   if (!match) return 440; // Default
-  
+
   const key = match[1];
   const octave = parseInt(match[2], 10);
-  
+
   const keyIndex = notes.indexOf(key);
   if (keyIndex === -1) return 440;
-  
+
   // A4 is index 9 in octave 4. Formula relative to A4 (440)
   // keyIndex for A is 9.
   // absolute semitone index = octave * 12 + keyIndex
   // A4 absolute = 4 * 12 + 9 = 57
   const semitoneOffset = (octave * 12 + keyIndex) - 57;
-  
+
   return 440 * Math.pow(2, semitoneOffset / 12);
 };
 
 export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled }) => {
   const [isMuted, setIsMuted] = useState(!enabled);
-  const isMutedRef = useRef(isMuted); 
+  const isMutedRef = useRef(isMuted);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const noiseBufferRef = useRef<AudioBuffer | null>(null);
-  
+
   // Soundscape Refs
   const soundscapeNodesRef = useRef<AudioNode[]>([]);
   const soundscapeTimersRef = useRef<ReturnType<typeof setInterval>[]>([]);
@@ -132,12 +132,12 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
         } catch (e) {}
     });
     soundscapeNodesRef.current = [];
-    
+
     // Clear timers
     soundscapeTimersRef.current.forEach(clearTimeout);
     soundscapeTimersRef.current.forEach(clearInterval);
     soundscapeTimersRef.current = [];
-    
+
     // Ramp down group gain if exists
     if (soundscapeGainRef.current && audioCtxRef.current) {
         try {
@@ -152,9 +152,9 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
 
   const startSoundscape = useCallback((params: SoundscapeParams) => {
     if (!audioCtxRef.current || !masterGainRef.current) return;
-    
+
     stopSoundscape(); // Clean up existing
-    
+
     const ctx = audioCtxRef.current;
     if (ctx.state === 'suspended') ctx.resume();
 
@@ -162,11 +162,11 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     const scapeGain = ctx.createGain();
     scapeGain.gain.value = 0;
     scapeGain.connect(masterGainRef.current);
-    
+
     // Fade In
     scapeGain.gain.setValueAtTime(0, ctx.currentTime);
     scapeGain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 3);
-    
+
     soundscapeGainRef.current = scapeGain;
     soundscapeNodesRef.current.push(scapeGain);
 
@@ -179,35 +179,35 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
             const osc = ctx.createOscillator();
             const oscGain = ctx.createGain();
             const filter = ctx.createBiquadFilter();
-            
+
             const freq = getFreq(el.note);
             osc.frequency.value = freq;
             osc.type = 'triangle';
-            
+
             // Detune slightly for thickness (chorus effect)
-            osc.detune.value = (Math.random() - 0.5) * 15; 
+            osc.detune.value = (Math.random() - 0.5) * 15;
 
             filter.type = 'lowpass';
             filter.frequency.value = 400; // Warm
-            
+
             // Simple LFO for filter movement
             const lfo = ctx.createOscillator();
             lfo.frequency.value = 0.1 + Math.random() * 0.1; // Slow breathing
             const lfoGain = ctx.createGain();
             lfoGain.gain.value = 200; // Modulation depth
-            
+
             lfo.connect(lfoGain);
             lfoGain.connect(filter.frequency);
-            
+
             osc.connect(filter);
             filter.connect(oscGain);
             oscGain.connect(scapeGain);
-            
+
             oscGain.gain.value = volume;
-            
+
             osc.start();
             lfo.start();
-            
+
             soundscapeNodesRef.current.push(osc, oscGain, filter, lfo, lfoGain);
 
         } else if (el.type === 'bell') {
@@ -218,13 +218,13 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
             const playBell = () => {
                 if (ctx.state === 'closed') return;
                 const t = ctx.currentTime;
-                
+
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
+
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, t);
-                
+
                 // Add metallic overtone
                 const overtone = ctx.createOscillator();
                 overtone.type = 'sine';
@@ -241,13 +241,13 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
                 overtone.connect(overtoneGain);
                 overtoneGain.connect(gain);
                 gain.connect(scapeGain);
-                
+
                 osc.start(t);
                 overtone.start(t);
                 osc.stop(t + 4.1);
                 overtone.stop(t + 4.1);
 
-                // Auto-cleanup wrapper nodes not needed as they stop themselves, 
+                // Auto-cleanup wrapper nodes not needed as they stop themselves,
                 // but we keep track of the interval
             };
 
@@ -258,27 +258,27 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
         } else if (el.type === 'noise') {
             // NOISE: Textured background
             if (!noiseBufferRef.current) return;
-            
+
             const src = ctx.createBufferSource();
             src.buffer = noiseBufferRef.current;
             src.loop = true;
-            
+
             const filter = ctx.createBiquadFilter();
             if (el.color === 'pink') {
-                filter.type = 'lowshelf'; 
+                filter.type = 'lowshelf';
                 filter.frequency.value = 500;
             } else {
                 filter.type = 'lowpass';
                 filter.frequency.value = 150; // Brown noise feel
             }
-            
+
             const noiseGain = ctx.createGain();
             noiseGain.gain.value = volume * 0.5; // Soften noise
-            
+
             src.connect(filter);
             filter.connect(noiseGain);
             noiseGain.connect(scapeGain);
-            
+
             src.start();
             soundscapeNodesRef.current.push(src, filter, noiseGain);
         }
@@ -296,30 +296,31 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    
+
     osc.frequency.setValueAtTime(600, t);
-    osc.frequency.exponentialRampToValueAtTime(50, t + 0.08); 
-    
+    osc.frequency.exponentialRampToValueAtTime(50, t + 0.08);
+
     gain.gain.setValueAtTime(0.15, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
 
     osc.connect(gain);
     gain.connect(masterGainRef.current);
     osc.start(t);
-    osc.stop(t + 0.1); 
+    osc.stop(t + 0.1);
   }, []);
 
   const playHover = useCallback(() => {
     if (isMutedRef.current || !audioCtxRef.current || !masterGainRef.current) return;
     const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    // Don't try to play if context hasn't been started by a user gesture yet
+    if (ctx.state === 'suspended') return;
     const t = ctx.currentTime;
 
     // Use noise buffer for airy hover if available
     if (noiseBufferRef.current) {
         const src = ctx.createBufferSource();
         src.buffer = noiseBufferRef.current;
-        
+
         const filter = ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.setValueAtTime(400, t);
@@ -333,7 +334,7 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
         src.connect(filter);
         filter.connect(gain);
         gain.connect(masterGainRef.current);
-        
+
         src.start(t);
         src.stop(t + 0.25);
     } else {
@@ -359,7 +360,7 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
 
     const src = ctx.createBufferSource();
     src.buffer = noiseBufferRef.current;
-    
+
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(100, t);
@@ -373,7 +374,7 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     src.connect(filter);
     filter.connect(gain);
     gain.connect(masterGainRef.current);
-    
+
     src.start(t);
     src.stop(t + 1.5);
   }, []);
@@ -383,20 +384,20 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     const ctx = audioCtxRef.current;
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const t = ctx.currentTime;
-    
-    const freqs = [523.25, 659.25, 783.99, 1046.50]; 
-    
+
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+
     freqs.forEach((f, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(f, t);
-        
+
         const start = t + i * 0.06;
         gain.gain.setValueAtTime(0, start);
         gain.gain.linearRampToValueAtTime(0.08, start + 0.1);
         gain.gain.exponentialRampToValueAtTime(0.001, start + 3.5);
-        
+
         osc.connect(gain);
         gain.connect(masterGainRef.current!);
         osc.start(start);
@@ -412,8 +413,8 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    
-    const freq = 1000 + Math.random() * 400; 
+
+    const freq = 1000 + Math.random() * 400;
     osc.frequency.setValueAtTime(freq, t);
     osc.frequency.exponentialRampToValueAtTime(freq - 200, t + 0.1);
 
@@ -430,7 +431,7 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     if (isMutedRef.current || !audioCtxRef.current || !masterGainRef.current) return;
     const ctx = audioCtxRef.current;
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-    
+
     for(let i=0; i<5; i++) {
         setTimeout(() => {
             if (!audioCtxRef.current) return;
@@ -439,10 +440,10 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
             const osc = ctxInner.createOscillator();
             const gain = ctxInner.createGain();
             osc.frequency.setValueAtTime(2000 + Math.random() * 2000, t);
-            
+
             gain.gain.setValueAtTime(0.03, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-            
+
             osc.connect(gain);
             gain.connect(masterGainRef.current!);
             osc.start(t);
@@ -468,9 +469,9 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    
+
     osc.type = 'sine';
-    
+
     gain.connect(masterGainRef.current);
     osc.connect(gain);
 
@@ -479,13 +480,13 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children, enabled 
     if (phase === 'inhale') {
         osc.frequency.setValueAtTime(150, t);
         osc.frequency.exponentialRampToValueAtTime(260, t + duration);
-        
+
         gain.gain.setValueAtTime(0, t);
         gain.gain.linearRampToValueAtTime(baseVol, t + duration * 0.8);
     } else if (phase === 'hold') {
         osc.frequency.setValueAtTime(260, t);
         gain.gain.setValueAtTime(baseVol, t);
-        gain.gain.linearRampToValueAtTime(baseVol * 0.8, t + duration); 
+        gain.gain.linearRampToValueAtTime(baseVol * 0.8, t + duration);
     } else if (phase === 'exhale') {
         osc.frequency.setValueAtTime(260, t);
         osc.frequency.exponentialRampToValueAtTime(150, t + duration);

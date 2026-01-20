@@ -8,7 +8,7 @@ const CustomCursor: React.FC = () => {
   const mouse = useRef({ x: -100, y: -100 });
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
-  
+
   // Main cursor position (smooth spring)
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
@@ -36,22 +36,22 @@ const CustomCursor: React.FC = () => {
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Detect interactive elements
-      const isInteractive = 
-        target.tagName === 'BUTTON' || 
-        target.tagName === 'A' || 
-        target.tagName === 'INPUT' || 
+      const isInteractive =
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
+        target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.closest('[data-hoverable="true"]') ||
-        target.closest('button') || 
+        target.closest('button') ||
         target.closest('a') ||
         getComputedStyle(target).cursor === 'pointer';
-        
+
       setIsHovering(!!isInteractive);
     };
 
     // Use requestAnimationFrame for smooth trail physics
     let animationFrameId: number;
-    
+
     const animateTrail = () => {
       let leadX = smoothX.get();
       let leadY = smoothY.get();
@@ -59,14 +59,14 @@ const CustomCursor: React.FC = () => {
       trail.forEach((point, index) => {
         const prevX = point.x.get();
         const prevY = point.y.get();
-        
+
         // Lerp for organic follow delay
         // First dots follow faster, tail follows slower
         const moveFactor = 0.4 - (index * 0.04);
-        
+
         const nextX = prevX + (leadX - prevX) * moveFactor;
         const nextY = prevY + (leadY - prevY) * moveFactor;
-        
+
         point.x.set(nextX);
         point.y.set(nextY);
 
@@ -74,7 +74,7 @@ const CustomCursor: React.FC = () => {
         leadX = nextX;
         leadY = nextY;
       });
-      
+
       animationFrameId = requestAnimationFrame(animateTrail);
     };
 
@@ -82,7 +82,7 @@ const CustomCursor: React.FC = () => {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mouseover', handleMouseOver);
-    
+
     animationFrameId = requestAnimationFrame(animateTrail);
 
     return () => {
@@ -104,39 +104,39 @@ const CustomCursor: React.FC = () => {
           style={{
             x: point.x,
             y: point.y,
-            left: -6, // Center offset (based on width)
+            left: -6,
             top: -6,
             width: 12,
             height: 12,
-            // Dynamic color gradient based on index: Cyan range on hover, Purple/Pink range on idle
-            backgroundColor: isHovering 
-               ? `hsl(${180 + i * 5}, 100%, 50%)` 
-               : `hsl(${270 + i * 10}, 100%, 70%)`,
-            opacity: 0.5 - (i / TRAIL_LENGTH) * 0.5,
-            scale: 1 - (i / TRAIL_LENGTH) * 0.8,
+            // Premium gold gradient on hover, purple/gold on idle
+            backgroundColor: isHovering
+               ? `hsl(${45 + i * 5}, 80%, ${60 - i * 3}%)` // Gold tones
+               : `hsl(${280 + i * 8}, 70%, ${65 - i * 4}%)`, // Purple to gold
+            opacity: 0.6 - (i / TRAIL_LENGTH) * 0.5,
+            scale: 1 - (i / TRAIL_LENGTH) * 0.7,
           }}
         />
       ))}
 
-      {/* Hover Ripple (Continuous Pulse) */}
+      {/* Hover Ripple (Premium Gold Pulse) */}
       <AnimatePresence>
         {isHovering && (
           <>
-            {/* Outer large ripple */}
+            {/* Outer large ripple - gold */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ 
-                    opacity: [0, 0.3, 0],
+                animate={{
+                    opacity: [0, 0.4, 0],
                     scale: [1, 2.5, 3],
-                    borderColor: ['rgba(34, 211, 238, 0.6)', 'rgba(34, 211, 238, 0)']
+                    borderColor: ['rgba(212, 175, 55, 0.7)', 'rgba(212, 175, 55, 0)']
                 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                transition={{ 
+                transition={{
                     duration: 1.5,
                     repeat: Infinity,
                     ease: "easeOut"
                 }}
-                className="absolute top-0 left-0 rounded-full border border-cyan-400/50"
+                className="absolute top-0 left-0 rounded-full border-2 border-[#d4af37]/50"
                 style={{
                     x: smoothX,
                     y: smoothY,
@@ -146,22 +146,22 @@ const CustomCursor: React.FC = () => {
                     height: 40,
                 }}
             />
-            {/* Inner faster ripple */}
+            {/* Inner faster ripple - purple accent */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ 
+                animate={{
                     opacity: [0, 0.5, 0],
                     scale: [1, 1.8, 2],
-                    borderColor: ['rgba(255, 105, 180, 0.6)', 'rgba(255, 105, 180, 0)']
+                    borderColor: ['rgba(147, 51, 234, 0.6)', 'rgba(147, 51, 234, 0)']
                 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                transition={{ 
+                transition={{
                     duration: 1,
                     repeat: Infinity,
                     ease: "easeOut",
                     delay: 0.2
                 }}
-                className="absolute top-0 left-0 rounded-full border border-pink-400/50"
+                className="absolute top-0 left-0 rounded-full border border-purple-500/50"
                 style={{
                     x: smoothX,
                     y: smoothY,
@@ -177,7 +177,7 @@ const CustomCursor: React.FC = () => {
 
       {/* Main Cursor Orb */}
       <motion.div
-        className="absolute top-0 left-0 rounded-full border border-white/90 backdrop-blur-[1px] mix-blend-exclusion"
+        className="absolute top-0 left-0 rounded-full border-2 backdrop-blur-[1px] mix-blend-exclusion"
         style={{
           x: smoothX,
           y: smoothY,
@@ -185,23 +185,23 @@ const CustomCursor: React.FC = () => {
           translateY: '-50%',
         }}
         animate={{
-          width: isHovering ? 50 : 24, // Scale larger on hover
-          height: isHovering ? 50 : 24,
-          borderColor: isHovering ? 'rgba(34, 211, 238, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-          backgroundColor: isHovering ? 'rgba(34, 211, 238, 0.05)' : 'transparent',
-          scale: isClicking ? 0.85 : 1,
+          width: isHovering ? 56 : 26,
+          height: isHovering ? 56 : 26,
+          borderColor: isHovering ? 'rgba(212, 175, 55, 0.9)' : 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: isHovering ? 'rgba(212, 175, 55, 0.05)' : 'rgba(0, 0, 0, 0)',
+          scale: isClicking ? 0.8 : 1,
         }}
-        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+        transition={{ type: "spring", stiffness: 400, damping: 28 }}
       >
          {/* Center Dot */}
-         <motion.div 
+         <motion.div
            className="absolute top-1/2 left-1/2 rounded-full bg-white"
            animate={{
-             width: isHovering ? 6 : 4,
-             height: isHovering ? 6 : 4,
+             width: isHovering ? 8 : 5,
+             height: isHovering ? 8 : 5,
              x: '-50%',
              y: '-50%',
-             backgroundColor: isHovering ? '#22d3ee' : '#ffffff' // Cyan tint on hover
+             backgroundColor: isHovering ? '#d4af37' : '#ffffff' // Gold on hover
            }}
          />
       </motion.div>

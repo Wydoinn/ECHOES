@@ -1,0 +1,165 @@
+{
+  "app": {
+    "name": "ECHOES",
+    "tagline": "Emotional Alchemy"
+  },
+  "landing": {
+    "subtitle": "A ritual for emotional alchemy",
+    "description": "Release what weighs upon you. Transform pain into art.",
+    "enterButton": "Begin Your Journey",
+    "tagline": "Where emotions become art"
+  },
+  "categories": {
+    "title": "What weighs upon your heart?",
+    "subtitle": "Choose the nature of your burden",
+    "grief": {
+      "title": "Grief & Loss",
+      "description": "For the weight of absence and the echoes of those gone"
+    },
+    "regret": {
+      "title": "Regret & Guilt",
+      "description": "For the paths not taken and the words left unspoken"
+    },
+    "heartbreak": {
+      "title": "Heartbreak",
+      "description": "For love that faded and connections that shattered"
+    },
+    "anxiety": {
+      "title": "Anxiety & Fear",
+      "description": "For the shadows that loom and the storms within"
+    },
+    "anger": {
+      "title": "Anger & Resentment",
+      "description": "For the fire that burns and the wounds that fester"
+    },
+    "emptiness": {
+      "title": "Emptiness & Lost Purpose",
+      "description": "For the void within and the search for meaning"
+    }
+  },
+  "canvas": {
+    "title": "Pour your heart into these words",
+    "placeholder": "Begin writing... let your emotions flow freely onto this page. There is no judgment here, only release.",
+    "wordCount": "{{count}} words",
+    "addVoice": "Add voice",
+    "addImage": "Add image",
+    "addDrawing": "Draw",
+    "addDocument": "Add document",
+    "continueButton": "Continue to Transformation",
+    "analyzing": "Analyzing image...",
+    "transcribing": "Transcribing...",
+    "draftSaved": "Draft saved",
+    "resumeDraft": "Resume previous draft?"
+  },
+  "breathing": {
+    "title": "Let us begin with breath",
+    "instruction": "Follow the rhythm. Inhale. Exhale. Release.",
+    "inhale": "Breathe in...",
+    "hold": "Hold...",
+    "exhale": "Release...",
+    "skip": "Skip breathing exercise"
+  },
+  "processing": {
+    "steps": {
+      "shatter": "Deconstructing emotional resonance...",
+      "distill": "Distilling raw memory...",
+      "weave": "Weaving new metaphors...",
+      "transmute": "Transmuting sorrow into light..."
+    },
+    "waiting": {
+      "1": "Consulting the stars...",
+      "2": "Tracing the constellations...",
+      "3": "Listening to the void...",
+      "4": "Gathering stardust...",
+      "5": "Harmonizing the echo..."
+    }
+  },
+  "revelation": {
+    "title": "Your Transformation",
+    "reflection": "Reflection",
+    "ritual": "Your Ritual",
+    "visualMetaphor": "Visual Metaphor",
+    "emotionalArc": "Emotional Journey",
+    "aftercare": "Aftercare",
+    "closureLetter": "Closure Letter",
+    "downloadRelic": "Download Relic",
+    "shareCard": "Share Card",
+    "newJourney": "Begin New Journey"
+  },
+  "settings": {
+    "title": "Settings",
+    "sound": "Sound",
+    "reducedMotion": "Reduced Motion",
+    "highContrast": "High Contrast",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "language": "Language",
+    "aiVoice": "AI Voice Style",
+    "sentimentIndicator": "Sentiment Indicator",
+    "demoMode": "Demo Mode"
+  },
+  "aiStyles": {
+    "poetic": {
+      "name": "Poetic",
+      "description": "Metaphorical, lyrical, and deeply symbolic"
+    },
+    "direct": {
+      "name": "Direct",
+      "description": "Clear, actionable, and straightforward"
+    },
+    "therapeutic": {
+      "name": "Therapeutic",
+      "description": "Warm, validating, and clinically-informed"
+    },
+    "spiritual": {
+      "name": "Spiritual",
+      "description": "Transcendent, mindful, and connected to the greater whole"
+    }
+  },
+  "safety": {
+    "title": "A Gentle Reminder",
+    "message": "This experience invites you to explore deep emotions. While powerful, ECHOES is not a substitute for professional mental health support.",
+    "crisisText": "If you're in crisis, please reach out to a professional.",
+    "hotline": "National Crisis Hotline: 988",
+    "proceed": "I Understand",
+    "cancel": "Return Home"
+  },
+  "privacy": {
+    "label": "Privacy & Ethics",
+    "tooltip": "Your emotions are sacred. ECHOES does not store your data on servers, track your behavior, or save your text. Everything is processed in real-time."
+  },
+  "history": {
+    "title": "Your Journey",
+    "sessions": "Sessions",
+    "drafts": "Drafts",
+    "empty": "No sessions yet",
+    "resume": "Resume",
+    "delete": "Delete"
+  },
+  "analytics": {
+    "title": "Personal Insights",
+    "totalSessions": "Total Sessions",
+    "wordsWritten": "Words Written",
+    "currentStreak": "Current Streak",
+    "topCategory": "Most Explored",
+    "emotionalLandscape": "Emotional Landscape"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "tryAgain": "Try Again",
+    "refresh": "Refresh Page",
+    "apiError": "Unable to connect to the transformation service",
+    "networkError": "Please check your internet connection"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  }
+}

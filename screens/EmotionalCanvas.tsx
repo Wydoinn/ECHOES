@@ -3,13 +3,37 @@ import * as React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI, Type } from "@google/genai";
-import { Category, EmotionalData, ImageAnalysis } from '../types';
+import { Category, EmotionalData, ImageAnalysis, AIResponseStyle } from '../types';
 import MagneticButton from '../components/MagneticButton';
 import DrawingModal from '../components/DrawingModal';
 import TypingBackground, { TypingBackgroundHandle } from '../components/TypingBackground';
 import VoiceVisualizer from '../components/VoiceVisualizer';
+import SentimentIndicator from '../components/SentimentIndicator';
+import GuidedJournaling from '../components/GuidedJournaling';
 import { useSound } from '../components/SoundManager';
 import { haptics } from '../utils/haptics';
+import { draftManager, DraftData } from '../utils/draftManager';
+
+// ===========================================
+// API TIER CONFIGURATION
+// Set GEMINI_API_TIER in .env file ('free' or 'paid')
+// ===========================================
+const API_TIER = (process.env.GEMINI_API_TIER as 'free' | 'paid') || 'free';
+
+const API_CONFIG = {
+  free: {
+    charThreshold: 40,      // Characters changed before regenerating prompts
+    debounceMs: 8000,       // 8 seconds wait after typing stops
+    minWordCount: 15,       // Minimum words before auto-prompts kick in
+  },
+  paid: {
+    charThreshold: 25,      // More responsive
+    debounceMs: 4000,       // 4 seconds - feels real-time
+    minWordCount: 10,       // Earlier assistance
+  }
+};
+
+const PROMPT_CONFIG = API_CONFIG[API_TIER];
 
 // Icons (SVG)
 const Icons = {
@@ -32,21 +56,44 @@ interface EmotionalCanvasProps {
   category: Category;
   onNext: (data: EmotionalData) => void;
   reducedMotion?: boolean;
+  aiResponseStyle?: AIResponseStyle;
+  sentimentIndicatorEnabled?: boolean;
+  guidedJournalingEnabled?: boolean;
+  initialDraft?: DraftData | null;
 }
 
-const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({ category, onNext, reducedMotion = false }) => {
+const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({
+  category,
+  onNext,
+  reducedMotion = false,
+  aiResponseStyle = 'poetic',
+  sentimentIndicatorEnabled = true,
+  guidedJournalingEnabled = false,
+  initialDraft = null
+}) => {
   // State
   const [wordCount, setWordCount] = useState(0);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
+  // Guided Journaling State
+  const [guidedPrompt, setGuidedPrompt] = useState<string>('');
+
+  // Draft resume notification
+  const [showDraftResume, setShowDraftResume] = useState(false);
+  const [resumableDraft, setResumableDraft] = useState<DraftData | null>(null);
+
+  // Draft auto-save ref
+  const draftSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentText = useRef<string>('');
+
   // Prompts State
   const [prompts, setPrompts] = useState<string[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
   const [arePromptsDismissed, setArePromptsDismissed] = useState(false);
   const lastAnalyzedText = useRef<string>("");
-  
+
   // Media State
   const [image, setImage] = useState<File | null>(null);
   const [imageAnalysis, setImageAnalysis] = useState<ImageAnalysis | null>(null);
@@ -55,21 +102,21 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({ category, onNext, red
   const [audio, setAudio] = useState<File | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  
+
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [drawing, setDrawing] = useState<string | null>(null); // Base64
-  
+
   // Recording State
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  
+
   // Using ref for audio chunks to avoid closure staleness issues
   const audioChunksRef = useRef<Blob[]>([]);
 
   // UI State
   const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
-  
+
   // Refs
   const editorRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,31 +124,93 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({ category, onNext, red
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
-  
+
   const typingBackgroundRef = useRef<TypingBackgroundHandle>(null);
   const lastTypeTime = useRef<number>(0);
 
   const { playType, playClick, playSparkle } = useSound();
 
-  // Focus editor on mount
+  // Focus editor on mount & check for existing draft
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.focus();
     }
+
+    // Check for initial draft (from resume)
+    if (initialDraft) {
+      if (editorRef.current) {
+        editorRef.current.innerText = initialDraft.text;
+        setShowPlaceholder(false);
+        setWordCount(initialDraft.text.trim().split(/\s+/).filter(w => w.length > 0).length);
+        currentText.current = initialDraft.text;
+      }
+      if (initialDraft.drawing) {
+        setDrawing(initialDraft.drawing);
+      }
+      if (initialDraft.transcription) {
+        setTranscription(initialDraft.transcription);
+      }
+    } else {
+      // Check for existing draft for this category
+      const existingDraft = draftManager.getDraftForCategory(category.id);
+      if (existingDraft && existingDraft.text.trim().length > 0) {
+        setResumableDraft(existingDraft);
+        setShowDraftResume(true);
+      }
+    }
+
     return () => {
         if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
         if (promptsTimeoutRef.current) clearTimeout(promptsTimeoutRef.current);
+        if (draftSaveTimeoutRef.current) clearTimeout(draftSaveTimeoutRef.current);
     };
   }, []);
+
+  // Auto-save draft on text change
+  const saveDraft = useCallback(() => {
+    const text = editorRef.current?.innerText || '';
+    if (text.trim().length > 10) {
+      draftManager.saveDraft({
+        categoryId: category.id,
+        categoryTitle: category.title,
+        text,
+        drawing,
+        transcription
+      });
+    }
+  }, [category.id, category.title, drawing, transcription]);
+
+  // Handle resuming draft
+  const handleResumeDraft = () => {
+    if (resumableDraft && editorRef.current) {
+      editorRef.current.innerText = resumableDraft.text;
+      setShowPlaceholder(false);
+      setWordCount(resumableDraft.text.trim().split(/\s+/).filter(w => w.length > 0).length);
+      currentText.current = resumableDraft.text;
+      if (resumableDraft.drawing) {
+        setDrawing(resumableDraft.drawing);
+      }
+      if (resumableDraft.transcription) {
+        setTranscription(resumableDraft.transcription);
+      }
+    }
+    setShowDraftResume(false);
+  };
+
+  const handleDiscardDraft = () => {
+    draftManager.clearCurrentDraft();
+    setShowDraftResume(false);
+  };
 
   // PROMPT GENERATION LOGIC
   const generatePrompts = async (force: boolean = false) => {
     if (arePromptsDismissed && !force) return;
 
     const currentText = editorRef.current?.innerText || "";
-    
+
     // Logic to avoid spamming API if text hasn't changed enough
-    if (!force && wordCount > 0 && Math.abs(currentText.length - lastAnalyzedText.current.length) < 20) {
+    // Uses config threshold based on API tier
+    if (!force && wordCount > 0 && Math.abs(currentText.length - lastAnalyzedText.current.length) < PROMPT_CONFIG.charThreshold) {
         return;
     }
 
@@ -109,7 +218,7 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({ category, onNext, red
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const isInitial = currentText.trim().length === 0;
-        
+
         let promptText = "";
         if (isInitial) {
              promptText = `CONTEXT: User selected category "${category.title}" (${category.description}). They haven't written anything yet. Generate 3 short, thought-provoking opening questions to help them begin.`;
@@ -118,7 +227,7 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({ category, onNext, red
         }
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-3-flash-preview',
             contents: { parts: [{ text: promptText }] },
             config: {
                 systemInstruction: `You are a gentle, creative journaling companion for ECHOES.
@@ -144,7 +253,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         if (result.questions && Array.isArray(result.questions)) {
             setPrompts(result.questions.slice(0, 3));
             lastAnalyzedText.current = currentText;
-            setArePromptsDismissed(false); 
+            setArePromptsDismissed(false);
         }
     } catch (err) {
         console.error("Prompts failed", err);
@@ -159,16 +268,16 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         generatePrompts(true);
     }, 1000);
     return () => clearTimeout(t);
-  }, [category.id]); 
+  }, [category.id]);
 
-  // Ongoing Prompts Logic (Debounced)
+  // Ongoing Prompts Logic (Debounced) - Uses API tier config
   useEffect(() => {
-    if (wordCount < 10) return; 
+    if (wordCount < PROMPT_CONFIG.minWordCount) return;
 
     if (promptsTimeoutRef.current) clearTimeout(promptsTimeoutRef.current);
     promptsTimeoutRef.current = setTimeout(() => {
         generatePrompts(false);
-    }, 5000); 
+    }, PROMPT_CONFIG.debounceMs);
 
     return () => {
         if (promptsTimeoutRef.current) clearTimeout(promptsTimeoutRef.current);
@@ -180,9 +289,9 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         playClick();
         const selection = window.getSelection();
         const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
-        
+
         const textNode = document.createTextNode(`\n\n${prompt}\n`);
-        
+
         if (range && editorRef.current.contains(range.commonAncestorContainer)) {
             range.collapse(false);
             range.insertNode(textNode);
@@ -198,7 +307,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
             selection?.addRange(newRange);
         }
         editorRef.current.dispatchEvent(new Event('input', { bubbles: true }));
-        setPrompts([]); 
+        setPrompts([]);
     }
   };
 
@@ -213,7 +322,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
     setImageAnalysis(null);
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        
+
         // Convert to base64
         const base64Data = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -226,7 +335,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         });
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-3-flash-preview',
             contents: {
                 parts: [
                     { inlineData: { mimeType: file.type, data: base64Data } },
@@ -238,7 +347,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         Output JSON: { "description": "", "emotionalTone": "", "symbols": [], "possibleMeaning": "" }` }
                 ]
             },
-            config: { 
+            config: {
                 responseMimeType: 'application/json',
                 responseSchema: {
                     type: Type.OBJECT,
@@ -251,7 +360,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                 }
             }
         });
-        
+
         const result = JSON.parse(response.text || "{}");
         setImageAnalysis(result);
         playSparkle(); // Audio feedback when analysis is done
@@ -268,7 +377,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
     setTranscription(null);
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        
+
         const base64Data = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(audioFile);
@@ -280,7 +389,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3-pro-preview',
+          model: 'gemini-3-flash-preview',
           contents: { parts: [
              { inlineData: { mimeType: audioFile.type || 'audio/mp3', data: base64Data } },
              { text: "Transcribe this audio recording word-for-word. Output only the raw transcription text, nothing else." }
@@ -302,6 +411,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
   // Handle Text Input & Typing Effects
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const content = e.currentTarget.innerText;
+    currentText.current = content;
     playType();
     haptics.type();
     const isEmpty = content.trim().length === 0;
@@ -322,6 +432,12 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         setWordCount(count);
         setIsAutoSaving(false);
     }, 600);
+
+    // Auto-save draft (debounced)
+    if (draftSaveTimeoutRef.current) clearTimeout(draftSaveTimeoutRef.current);
+    draftSaveTimeoutRef.current = setTimeout(() => {
+      saveDraft();
+    }, 2000);
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -338,7 +454,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         setAudioStream(stream);
         const recorder = new MediaRecorder(stream);
         setMediaRecorder(recorder);
-        audioChunksRef.current = []; 
+        audioChunksRef.current = [];
         recorder.ondataavailable = (e) => {
             if (e.data.size > 0) {
                 audioChunksRef.current.push(e.data);
@@ -463,24 +579,60 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
   }, [wordCount, image, drawing, audio, documentFile, isDrawingModalOpen, handleNext, toggleRecording]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="relative w-full h-screen flex flex-col items-center overflow-hidden"
     >
       {/* Background Overlay & Effects */}
-      <div className="absolute inset-0 bg-black/60 -z-10" />
+      <div className="absolute inset-0 bg-[#0d0617]/40 -z-10" />
       <TypingBackground ref={typingBackgroundRef} />
+
+      {/* Draft Resume Notification */}
+      <AnimatePresence>
+        {showDraftResume && resumableDraft && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-30 w-full max-w-md"
+          >
+            <div className="mx-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 rounded-2xl p-4 shadow-lg">
+              <div className="flex items-center gap-2 text-green-400 text-xs mb-2">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                UNFINISHED DRAFT FOUND
+              </div>
+              <p className="text-white/70 text-sm line-clamp-2 mb-3">
+                "{resumableDraft.text.slice(0, 100)}{resumableDraft.text.length > 100 ? '...' : ''}"
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleResumeDraft}
+                  className="flex-1 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-300 text-sm transition-colors"
+                >
+                  Resume
+                </button>
+                <button
+                  onClick={handleDiscardDraft}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 text-sm transition-colors"
+                >
+                  Start Fresh
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Voice Visualizer Overlay */}
       <AnimatePresence>
         {isRecording && audioStream && (
-             <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+             <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+                className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-[#0d0617]/70 backdrop-blur-sm"
              >
                 <VoiceVisualizer stream={audioStream} />
                 <div className="absolute bottom-32 text-white/70 animate-pulse tracking-widest">LISTENING TO YOUR ECHO...</div>
@@ -497,15 +649,31 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
             <span>{category.icon}</span>
             <span>{category.title}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full bg-green-400 transition-opacity duration-500 ${isAutoSaving ? 'opacity-100' : 'opacity-0'}`} />
-          <span>{isAutoSaving ? 'Saving...' : 'Saved'}</span>
+        <div className="flex items-center gap-4">
+          {/* Sentiment Indicator - Feature 11 */}
+          <SentimentIndicator
+            text={currentText.current}
+            isEnabled={sentimentIndicatorEnabled}
+            reducedMotion={reducedMotion}
+          />
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full bg-purple-400 transition-opacity duration-500 ${isAutoSaving ? 'opacity-100' : 'opacity-0'}`} />
+            <span>{isAutoSaving ? 'Saving...' : 'Saved'}</span>
+          </div>
         </div>
       </div>
 
+      {/* Guided Journaling Panel */}
+      <GuidedJournaling
+        isEnabled={guidedJournalingEnabled}
+        category={category}
+        onPromptChange={setGuidedPrompt}
+        currentWordCount={wordCount}
+      />
+
       {/* Main Canvas Area - Glass Card */}
       <div className="flex-1 w-full max-w-3xl relative z-10 min-h-0 px-6 py-2 flex flex-col justify-center">
-        <motion.div 
+        <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8 }}
@@ -521,7 +689,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
              {/* Inner Highlight */}
              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-            <div 
+            <div
                 className="flex-1 w-full overflow-y-auto no-scrollbar relative cursor-text p-8 md:p-12"
                 onClick={handleAreaClick}
             >
@@ -529,9 +697,9 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     {/* Placeholder */}
                     <AnimatePresence>
                     {showPlaceholder && (
-                        <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
+                        <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-full"
                         >
@@ -543,7 +711,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     </AnimatePresence>
 
                     {/* The Editor */}
-                    <div 
+                    <div
                         ref={editorRef}
                         contentEditable
                         onInput={handleInput}
@@ -554,9 +722,9 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     />
                 </div>
             </div>
-            
+
             {/* Word Count */}
-            <div className="absolute bottom-4 right-6 pointer-events-none z-20">
+            <div className="absolute bottom-4 right-6 pointer-events-none z-20" aria-live="polite" aria-atomic="true">
                 <div className="bg-black/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${wordCount > 0 ? 'bg-pink-500' : 'bg-white/20'}`} />
                     <span className="text-white/60 text-xs font-mono">
@@ -584,9 +752,9 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     <span className="tracking-widest uppercase">Listening...</span>
                 </motion.div>
             ) : prompts.length > 0 ? (
-                <motion.div 
+                <motion.div
                     key="list"
-                    initial={{ opacity: 0 }} 
+                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="flex items-center gap-2"
@@ -606,7 +774,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                             </motion.button>
                         ))}
                     </div>
-                    
+
                     {/* Controls */}
                     <div className="flex items-center gap-1 ml-2 border-l border-white/10 pl-2">
                         <button onClick={() => generatePrompts(true)} className="p-2 text-white/30 hover:text-white/80 transition-colors rounded-full hover:bg-white/5" title="Refresh Ideas">
@@ -635,21 +803,23 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
 
       {/* Attachments & Controls */}
       <div className="w-full max-w-3xl flex-none flex flex-col gap-4 px-6 pb-8 z-20">
-        
+
         {/* Error Notification */}
-        <AnimatePresence>
-            {error && (
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-2 text-red-300 text-sm bg-red-900/20 border border-red-500/30 px-4 py-2 rounded-lg backdrop-blur-md w-fit mx-auto"
-                >
-                    <Icons.Alert />
-                    <span>{error}</span>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        <div role="alert" aria-live="assertive" aria-atomic="true">
+          <AnimatePresence>
+              {error && (
+                  <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2 text-red-300 text-sm bg-red-900/20 border border-red-500/30 px-4 py-2 rounded-lg backdrop-blur-md w-fit mx-auto"
+                  >
+                      <Icons.Alert />
+                      <span>{error}</span>
+                  </motion.div>
+              )}
+          </AnimatePresence>
+        </div>
 
         {/* Attachment Previews */}
         <div className="flex gap-4 overflow-x-auto min-h-[60px]">
@@ -657,7 +827,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                 {image && (
                     <motion.div initial={{scale: 0}} animate={{scale: 1}} exit={{scale: 0}} className="relative group min-w-[60px] h-[60px] rounded-lg overflow-hidden border border-white/20">
                         <img src={URL.createObjectURL(image)} alt="upload" className="w-full h-full object-cover" />
-                        
+
                         {/* Analysis Indicators */}
                         {isAnalyzingImage && (
                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -723,11 +893,11 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                 </MagneticButton>
 
                 <input type="file" ref={audioInputRef} accept="audio/*" className="hidden" onChange={(e) => handleFileSelect(e, 'audio')} />
-                
-                <MagneticButton 
-                    onClick={toggleRecording} 
-                    active={isRecording} 
-                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${isRecording ? 'bg-red-500/20 border-red-500' : ''}`} 
+
+                <MagneticButton
+                    onClick={toggleRecording}
+                    active={isRecording}
+                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${isRecording ? 'bg-red-500/20 border-red-500' : ''}`}
                     reducedMotion={reducedMotion}
                     shortcut="⌘+R"
                 >
@@ -741,10 +911,10 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     <span className="text-white/80"><Icons.File /></span>
                 </MagneticButton>
 
-                <MagneticButton 
-                    onClick={() => setIsDrawingModalOpen(true)} 
-                    active={!!drawing} 
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-full" 
+                <MagneticButton
+                    onClick={() => setIsDrawingModalOpen(true)}
+                    active={!!drawing}
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full"
                     reducedMotion={reducedMotion}
                     shortcut="⌘+D"
                 >
@@ -759,8 +929,8 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                     >
-                         <MagneticButton 
-                            onClick={handleNext} 
+                         <MagneticButton
+                            onClick={handleNext}
                             className="h-10 md:h-12 px-6 md:px-8"
                             reducedMotion={reducedMotion}
                             shortcut="⌘+Enter"
@@ -779,10 +949,10 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         </div>
       </div>
 
-      <DrawingModal 
-        isOpen={isDrawingModalOpen} 
-        onClose={() => setIsDrawingModalOpen(false)} 
-        onSave={(data) => setDrawing(data)} 
+      <DrawingModal
+        isOpen={isDrawingModalOpen}
+        onClose={() => setIsDrawingModalOpen(false)}
+        onSave={(data) => setDrawing(data)}
       />
 
     </motion.div>
