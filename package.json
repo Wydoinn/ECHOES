@@ -1,0 +1,79 @@
+{
+  "name": "echoes",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node node_modules/typescript/bin/tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:run": "vitest run",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "lint-staged": "lint-staged",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@google/genai": "^1.31.0",
+    "@sentry/react": "^8.0.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "framer-motion": "^12.23.25",
+    "i18next": "^25.7.4",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "jspdf": "^4.0.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-i18next": "^16.5.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "@vercel/node": "^4.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/coverage-v8": "^3.2.0",
+    "@vitest/ui": "^3.2.0",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.28.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.2.0",
+    "husky": "^9.0.0",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^15.2.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.8.2",
+    "vite": "^6.3.0",
+    "vitest": "^3.2.0"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0",
+    "undici": "^7.0.0",
+    "tar": "^7.5.7",
+    "rimraf": "^5.0.0",
+    "glob": "^10.0.0",
+    "@mapbox/node-pre-gyp": {
+      "npmlog": "npm:console@^0.7.0"
+    },
+    "node-fetch": {
+      "fetch-blob": "^4.0.0"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --no-warn-ignored",
+      "vitest related --run"
+    ]
+  }
+}

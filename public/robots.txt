@@ -1,0 +1,7 @@
+# ECHOES Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://echoes.vercel.app/sitemap.xml
