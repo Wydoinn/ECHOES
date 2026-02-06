@@ -160,6 +160,8 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "delete": "Eliminar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "home": "Inicio",
+    "returnHome": "Volver al Inicio"
   }
 }

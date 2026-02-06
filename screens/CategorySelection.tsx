@@ -2,12 +2,15 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import TiltCard from '../components/TiltCard';
+import HomeButton from '../components/HomeButton';
 import { Category } from '../types';
 import { sessionMemory } from '../utils/sessionMemory';
 import { useSound } from '../components/SoundManager';
+import { useTranslation } from 'react-i18next';
 
 interface CategorySelectionProps {
   onSelect: (category: Category) => void;
+  onRestart: () => void;
   reducedMotion?: boolean;
 }
 
@@ -20,12 +23,18 @@ const categories: Category[] = [
   { id: 'identity', icon: '🎭', title: 'Identity & Confusion', description: 'Finding yourself in the noise.' },
 ];
 
-const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect, reducedMotion = false }) => {
+const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect, onRestart, reducedMotion = false }) => {
+  const { t } = useTranslation();
   const insight = useMemo(() => sessionMemory.getInsight(), []);
   const { playSparkle } = useSound();
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
+
+      {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <HomeButton onClick={onRestart} />
+      </div>
 
       {/* Premium Header */}
       <motion.div
@@ -43,9 +52,9 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect, reduced
         />
 
         <h2 className="font-serif-display text-3xl md:text-5xl font-normal text-white mb-5 tracking-wide">
-          Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f4e5b2] via-[#d4af37] to-[#f4e5b2]">Release</span>
+          {t('categories.title').split(' ').slice(0, -1).join(' ')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f4e5b2] via-[#d4af37] to-[#f4e5b2]">{t('categories.title').split(' ').pop()}</span>
         </h2>
-        <p className="font-serif-body italic text-white/50 text-lg">Select the emotion closest to your heart</p>
+        <p className="font-serif-body italic text-white/50 text-lg">{t('categories.subtitle')}</p>
 
         {/* Decorative bottom element */}
         <motion.div

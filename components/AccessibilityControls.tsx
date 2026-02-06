@@ -60,13 +60,6 @@ const AccessibilityControls: React.FC<AccessibilityControlsProps> = ({
     onUpdate({ ...settings, [key]: !settings[key] });
   };
 
-  const cycleTheme = () => {
-    const themes: Array<'dark' | 'light' | 'system'> = ['dark', 'light', 'system'];
-    const currentIndex = themes.indexOf(settings.theme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length] ?? 'dark';
-    onUpdate({ ...settings, theme: nextTheme });
-  };
-
   const changeLanguage = (langCode: string) => {
     i18n.changeLanguage(langCode);
     setShowLanguageMenu(false);
@@ -146,19 +139,6 @@ const AccessibilityControls: React.FC<AccessibilityControlsProps> = ({
                   className={`w-12 h-6 rounded-full relative transition-all duration-500 ${settings.guidedJournalingEnabled ? 'bg-gradient-to-r from-[#d4af37] to-purple-600 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'bg-white/10 border border-white/10'}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-md ${settings.guidedJournalingEnabled ? 'left-7' : 'left-1'}`} />
-                </button>
-              </div>
-
-              {/* Theme Toggle */}
-              <div className="flex items-center justify-between">
-                <span className="text-white/70 text-sm font-light">{t('settings.theme')}</span>
-                <button
-                  onClick={cycleTheme}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 hover:bg-white/15 transition-all text-sm text-white/70"
-                >
-                  {settings.theme === 'dark' && <><Icons.Moon /> {t('settings.dark')}</>}
-                  {settings.theme === 'light' && <><Icons.Sun /> {t('settings.light')}</>}
-                  {settings.theme === 'system' && <>⚙️ System</>}
                 </button>
               </div>
 

@@ -57,8 +57,8 @@ const SentimentIndicator: React.FC<SentimentIndicatorProps> = ({
       clearTimeout(analysisTimeout.current);
     }
 
-    // Only analyze if text has changed significantly
-    if (Math.abs(text.length - lastAnalyzedText.current.length) < 30) {
+    // Only analyze if text has changed meaningfully (at least 15 chars different)
+    if (lastAnalyzedText.current.length > 0 && Math.abs(text.length - lastAnalyzedText.current.length) < 15) {
       return;
     }
 
@@ -68,6 +68,41 @@ const SentimentIndicator: React.FC<SentimentIndicatorProps> = ({
       try {
         const userApiKey = apiKeyManager.getApiKey();
         if (!userApiKey) {
+          // Fallback: basic keyword-based sentiment when no API key
+          const lowerText = text.toLowerCase();
+          const emotionKeywords: Record<string, string[]> = {
+            joy: ['happy', 'joy', 'glad', 'wonderful', 'amazing', 'love', 'smile', 'laugh', 'blessed', 'grateful'],
+            sadness: ['sad', 'cry', 'tears', 'miss', 'lonely', 'lost', 'empty', 'hurt', 'pain', 'sorrow'],
+            anger: ['angry', 'furious', 'hate', 'rage', 'mad', 'frustrated', 'unfair', 'betrayed'],
+            fear: ['afraid', 'scared', 'terrified', 'worry', 'anxious', 'panic', 'dread', 'nervous'],
+            love: ['love', 'adore', 'cherish', 'dear', 'heart', 'affection', 'beloved', 'care'],
+            hope: ['hope', 'wish', 'dream', 'believe', 'faith', 'better', 'someday', 'future'],
+            grief: ['grief', 'mourn', 'loss', 'gone', 'died', 'death', 'funeral', 'passed'],
+            anxiety: ['anxious', 'anxiety', 'worry', 'stress', 'overwhelm', 'restless', 'tension'],
+            peace: ['peace', 'calm', 'serene', 'quiet', 'still', 'gentle', 'breathe', 'rest'],
+            nostalgia: ['remember', 'memory', 'used to', 'once', 'ago', 'childhood', 'forgotten', 'past'],
+          };
+
+          let bestEmotion = 'neutral';
+          let bestCount = 0;
+          for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+            const count = keywords.filter(kw => lowerText.includes(kw)).length;
+            if (count > bestCount) {
+              bestCount = count;
+              bestEmotion = emotion;
+            }
+          }
+
+          if (bestCount > 0) {
+            const visuals = emotionVisuals[bestEmotion] ?? emotionVisuals.neutral ?? { color: '#9ca3af', icon: '○' };
+            setSentiment({
+              primaryEmotion: bestEmotion,
+              intensity: Math.min(1, bestCount * 0.25),
+              color: visuals.color,
+              icon: visuals.icon
+            });
+          }
+          lastAnalyzedText.current = text;
           setIsAnalyzing(false);
           return;
         }

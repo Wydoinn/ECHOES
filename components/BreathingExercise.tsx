@@ -2,18 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from './SoundManager';
 import { haptics } from '../utils/haptics';
+import { useTranslation } from 'react-i18next';
+import HomeButton from './HomeButton';
 
 interface BreathingExerciseProps {
   onComplete: () => void;
   onSkip: () => void;
+  onRestart: () => void;
 }
 
 type Phase = 'inhale' | 'hold' | 'exhale';
 
-const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSkip }) => {
+const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSkip, onRestart }) => {
   const [phase, setPhase] = useState<Phase>('inhale');
   const [cycleCount, setCycleCount] = useState(1);
   const [isStarted, setIsStarted] = useState(false);
+  const { t } = useTranslation();
 
   const { playBreathPhase } = useSound();
 
@@ -69,6 +73,10 @@ const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSki
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0d0617]/70 backdrop-blur-md"
     >
+      {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <HomeButton onClick={onRestart} />
+      </div>
       <div className="flex flex-col items-center justify-center">
 
           {/* Main Breathing Circle */}
@@ -110,7 +118,7 @@ const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSki
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                     className="text-3xl md:text-5xl font-serif-display font-normal text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f4e5b2] to-[#d4af37]/60 tracking-[0.2em] uppercase"
                   >
-                      {phase === 'inhale' ? 'Inhale' : phase === 'hold' ? 'Hold' : 'Exhale'}
+                      {phase === 'inhale' ? t('breathing.inhale') : phase === 'hold' ? t('breathing.hold') : t('breathing.exhale')}
                   </motion.h2>
               </AnimatePresence>
 
@@ -139,7 +147,7 @@ const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSki
             onClick={onSkip}
             className="text-[10px] uppercase tracking-[0.3em] text-[#d4af37]/40 hover:text-[#d4af37]/80 transition-all duration-500 border-b border-transparent hover:border-[#d4af37]/30 pb-1 font-medium"
           >
-              Skip Breathing
+              {t('breathing.skip')}
           </button>
       </motion.div>
 

@@ -160,6 +160,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "home": "Home",
+    "returnHome": "Return Home"
   }
 }

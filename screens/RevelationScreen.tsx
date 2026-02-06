@@ -11,6 +11,7 @@ import AftercareKit from '../components/AftercareKit';
 import AudioEmotionMirror from '../components/AudioEmotionMirror';
 import EmotionalArcGraph from '../components/EmotionalArcGraph';
 import AmbientPlayer from '../components/AmbientPlayer';
+import HomeButton from '../components/HomeButton';
 import { generateShareCard } from '../utils/shareCardGenerator';
 
 interface RevelationScreenProps {
@@ -48,6 +49,11 @@ const RevelationScreen: React.FC<RevelationScreenProps> = ({ result, originalDat
 
   return (
     <div className="w-full bg-transparent text-white overflow-x-hidden font-sans">
+
+      {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <HomeButton onClick={onRestart} />
+      </div>
 
       {/* AI Ambient Sound Player */}
       <AmbientPlayer

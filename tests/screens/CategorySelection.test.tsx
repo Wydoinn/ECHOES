@@ -26,26 +26,30 @@ vi.mock('../../utils/sessionMemory', () => ({
 
 describe('CategorySelection', () => {
   const mockOnSelect = vi.fn();
+  const mockOnRestart = vi.fn();
 
   beforeEach(() => {
     mockOnSelect.mockClear();
+    mockOnRestart.mockClear();
   });
 
   it('should render the heading', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
-    expect(screen.getByText(/Choose Your/)).toBeInTheDocument();
-    expect(screen.getByText('Release')).toBeInTheDocument();
+    // i18n mock returns 'categories.title' as-is
+    // The component splits it: '' + 'categories.title'
+    expect(screen.getByText('categories.title')).toBeInTheDocument();
   });
 
   it('should render subtitle', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
-    expect(screen.getByText('Select the emotion closest to your heart')).toBeInTheDocument();
+    // i18n mock returns 'categories.subtitle' as-is
+    expect(screen.getByText('categories.subtitle')).toBeInTheDocument();
   });
 
   it('should render all category options', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     expect(screen.getByText('Unsent Message')).toBeInTheDocument();
     expect(screen.getByText('Grief & Loss')).toBeInTheDocument();
@@ -56,7 +60,7 @@ describe('CategorySelection', () => {
   });
 
   it('should render category descriptions', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     expect(screen.getByText('Words you never got to say.')).toBeInTheDocument();
     expect(screen.getByText('Processing the space they left behind.')).toBeInTheDocument();
@@ -67,7 +71,7 @@ describe('CategorySelection', () => {
   });
 
   it('should render category icons', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     expect(screen.getByText('💔')).toBeInTheDocument();
     expect(screen.getByText('🕊️')).toBeInTheDocument();
@@ -78,7 +82,7 @@ describe('CategorySelection', () => {
   });
 
   it('should call onSelect with correct category when clicked', () => {
-    render(<CategorySelection onSelect={mockOnSelect} />);
+    render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     // Click on "Grief & Loss" by finding parent TiltCard
     const griefTitle = screen.getByText('Grief & Loss');
@@ -93,7 +97,7 @@ describe('CategorySelection', () => {
 
   it('should work with reducedMotion prop', () => {
     const { container } = render(
-      <CategorySelection onSelect={mockOnSelect} reducedMotion={true} />
+      <CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} reducedMotion={true} />
     );
 
     expect(container).toBeInTheDocument();
@@ -116,14 +120,14 @@ describe('CategorySelection', () => {
     // Need to re-import after mock change
     const { default: CategorySelectionComponent } = await import('../../screens/CategorySelection');
 
-    render(<CategorySelectionComponent onSelect={mockOnSelect} />);
+    render(<CategorySelectionComponent onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     // Check if familiar badge is shown
     expect(screen.getByText(/Familiar/i)).toBeInTheDocument();
   });
 
   it('should have 6 category cards', () => {
-    const { container } = render(<CategorySelection onSelect={mockOnSelect} />);
+    const { container } = render(<CategorySelection onSelect={mockOnSelect} onRestart={mockOnRestart} />);
 
     // Count cards by finding elements with perspective class
     const cards = container.querySelectorAll('div[class*="perspective"]');

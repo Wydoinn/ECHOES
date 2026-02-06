@@ -10,6 +10,7 @@ import TypingBackground, { TypingBackgroundHandle } from '../components/TypingBa
 import VoiceVisualizer from '../components/VoiceVisualizer';
 import SentimentIndicator from '../components/SentimentIndicator';
 import GuidedJournaling from '../components/GuidedJournaling';
+import HomeButton from '../components/HomeButton';
 import { useSound } from '../components/SoundManager';
 import { haptics } from '../utils/haptics';
 import { draftManager, DraftData } from '../utils/draftManager';
@@ -56,6 +57,7 @@ const Icons = {
 interface EmotionalCanvasProps {
   category: Category;
   onNext: (data: EmotionalData) => void;
+  onRestart: () => void;
   reducedMotion?: boolean;
   aiResponseStyle?: AIResponseStyle;
   sentimentIndicatorEnabled?: boolean;
@@ -66,6 +68,7 @@ interface EmotionalCanvasProps {
 const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({
   category,
   onNext,
+  onRestart,
   reducedMotion = false,
   sentimentIndicatorEnabled = true,
   guidedJournalingEnabled = false,
@@ -73,6 +76,7 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({
 }) => {
   // State
   const [wordCount, setWordCount] = useState(0);
+  const [sentimentText, setSentimentText] = useState('');
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -446,6 +450,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
     updateTimeoutRef.current = setTimeout(() => {
         const count = content.trim().split(/\s+/).filter(w => w.length > 0).length;
         setWordCount(count);
+        setSentimentText(content);
         setIsAutoSaving(false);
     }, 600);
 
@@ -605,6 +610,11 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
       <div className="absolute inset-0 bg-[#0d0617]/40 -z-10" />
       <TypingBackground ref={typingBackgroundRef} />
 
+      {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <HomeButton onClick={onRestart} />
+      </div>
+
       {/* Draft Resume Notification */}
       <AnimatePresence>
         {showDraftResume && resumableDraft && (
@@ -668,7 +678,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
         <div className="flex items-center gap-4">
           {/* Sentiment Indicator - Feature 11 */}
           <SentimentIndicator
-            text={currentText.current}
+            text={sentimentText}
             isEnabled={sentimentIndicatorEnabled}
             reducedMotion={reducedMotion}
           />

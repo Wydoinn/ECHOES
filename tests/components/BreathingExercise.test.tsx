@@ -15,6 +15,10 @@ vi.mock('framer-motion', () => ({
       React.createElement('h2', props, children),
     span: ({ children, ...props }: React.HTMLProps<HTMLSpanElement>) =>
       React.createElement('span', props, children),
+    button: ({ children, ...props }: React.HTMLProps<HTMLButtonElement>) =>
+      React.createElement('button', props, children),
+    p: ({ children, ...props }: React.HTMLProps<HTMLParagraphElement>) =>
+      React.createElement('p', props, children),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -44,11 +48,13 @@ import BreathingExercise from '../../components/BreathingExercise';
 describe('BreathingExercise', () => {
   const mockOnComplete = vi.fn();
   const mockOnSkip = vi.fn();
+  const mockOnRestart = vi.fn();
 
   beforeEach(() => {
     vi.useFakeTimers();
     mockOnComplete.mockClear();
     mockOnSkip.mockClear();
+    mockOnRestart.mockClear();
   });
 
   afterEach(() => {
@@ -57,29 +63,29 @@ describe('BreathingExercise', () => {
   });
 
   it('should render the breathing exercise', () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    // Initially shows Inhale
-    expect(screen.getByText('Inhale')).toBeInTheDocument();
+    // Initially shows breathing.inhale (i18n key)
+    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
   });
 
   it('should render skip button', () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    expect(screen.getByText('Skip Breathing')).toBeInTheDocument();
+    expect(screen.getByText('breathing.skip')).toBeInTheDocument();
   });
 
   it('should call onSkip when skip button is clicked', () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    fireEvent.click(screen.getByText('Skip Breathing'));
+    fireEvent.click(screen.getByText('breathing.skip'));
 
     expect(mockOnSkip).toHaveBeenCalledTimes(1);
   });
 
   it('should render progress dots for cycles', () => {
     const { container } = render(
-      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />
+      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />
     );
 
     // Should have 4 progress dots (TOTAL_CYCLES = 4)
@@ -88,22 +94,22 @@ describe('BreathingExercise', () => {
   });
 
   it('should start automatically after delay', async () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    // Initial state shows Inhale
-    expect(screen.getByText('Inhale')).toBeInTheDocument();
+    // Initial state shows inhale
+    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
 
     // Advance past the start delay (1000ms)
     await act(async () => {
       vi.advanceTimersByTime(1000);
     });
 
-    // Should still show Inhale (exercise has started)
-    expect(screen.getByText('Inhale')).toBeInTheDocument();
+    // Should still show inhale (exercise has started)
+    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
   });
 
   it('should transition through phases', async () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
     // Start the exercise
     await act(async () => {
@@ -111,25 +117,25 @@ describe('BreathingExercise', () => {
     });
 
     // Verify initial inhale phase
-    expect(screen.getByText('Inhale')).toBeInTheDocument();
+    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
 
     // Advance to hold phase (4000ms)
     await act(async () => {
       vi.advanceTimersByTime(4000);
     });
 
-    expect(screen.getByText('Hold')).toBeInTheDocument();
+    expect(screen.getByText('breathing.hold')).toBeInTheDocument();
 
     // Advance to exhale phase (4000ms)
     await act(async () => {
       vi.advanceTimersByTime(4000);
     });
 
-    expect(screen.getByText('Exhale')).toBeInTheDocument();
+    expect(screen.getByText('breathing.exhale')).toBeInTheDocument();
   });
 
   it('should complete after all cycles', async () => {
-    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />);
+    render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
     // Start the exercise
     await act(async () => {
@@ -155,7 +161,7 @@ describe('BreathingExercise', () => {
 
   it('should show correct number of completed cycles in progress dots', async () => {
     const { container } = render(
-      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />
+      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />
     );
 
     // Start the exercise
@@ -170,7 +176,7 @@ describe('BreathingExercise', () => {
 
   it('should have correct backdrop styling', () => {
     const { container } = render(
-      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />
+      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />
     );
 
     const backdrop = container.firstChild;
@@ -179,7 +185,7 @@ describe('BreathingExercise', () => {
 
   it('should have breathing orb element', () => {
     const { container } = render(
-      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />
+      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />
     );
 
     // Check for the orb gradient element
@@ -189,7 +195,7 @@ describe('BreathingExercise', () => {
 
   it('should render guide rings', () => {
     const { container } = render(
-      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} />
+      <BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />
     );
 
     // Check for outer guide rings

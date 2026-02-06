@@ -13,6 +13,7 @@ import { getTimeContext } from '../utils/timeAwareness';
 import { sessionMemory } from '../utils/sessionMemory';
 import { styleSystemInstructions } from '../components/AIResponseStyleSelector';
 import { apiKeyManager } from '../utils/apiKeyManager';
+import HomeButton from '../components/HomeButton';
 
 interface ProcessingScreenProps {
   data: EmotionalData;
@@ -508,6 +509,11 @@ Generate valid JSON only.`,
 
   return (
     <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0d0617]/80">
+
+      {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <HomeButton onClick={onRestart} />
+      </div>
 
       {/* Alchemical Canvas Engine - Hide if crisis overlay is active to reduce noise */}
       {!showCrisisOverlay && !reducedMotion && <AlchemicalVortex phase={phase} reducedMotion={reducedMotion} />}

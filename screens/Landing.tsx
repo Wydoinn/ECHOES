@@ -3,6 +3,7 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import MagneticButton from '../components/MagneticButton';
 import { useSound } from '../components/SoundManager';
+import { useTranslation } from 'react-i18next';
 
 interface LandingProps {
   onEnter: () => void;
@@ -11,8 +12,9 @@ interface LandingProps {
 }
 
 const Landing: React.FC<LandingProps> = ({ onEnter, reducedMotion = false, greeting = "What have you left unsaid?" }) => {
-  const brandName = "ECHOES";
-  const tagline = "Emotional Alchemy";
+  const { t } = useTranslation();
+  const brandName = t('app.name');
+  const tagline = t('app.tagline');
   const { playWhoosh } = useSound();
 
   const containerVariants = {
@@ -128,7 +130,7 @@ const Landing: React.FC<LandingProps> = ({ onEnter, reducedMotion = false, greet
                 reducedMotion={reducedMotion}
             >
                 <span className="text-sm font-serif-display text-[#f4e5b2] tracking-[0.25em] uppercase group-hover:text-white transition-colors duration-500">
-                    Begin Your Journey
+                    {t('landing.enterButton')}
                 </span>
             </MagneticButton>
 

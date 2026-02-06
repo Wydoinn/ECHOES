@@ -160,6 +160,8 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "confirm": "Bestätigen"
+    "confirm": "Bestätigen",
+    "home": "Startseite",
+    "returnHome": "Zurück zur Startseite"
   }
 }

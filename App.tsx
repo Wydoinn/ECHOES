@@ -98,17 +98,12 @@ function App() {
     }
   }, [settings]);
 
-  // Apply theme to document
+  // Apply dark theme to document
   useEffect(() => {
     const root = document.documentElement;
-    if (settings.theme === 'light') {
-      root.classList.add('light-theme');
-      root.classList.remove('dark-theme');
-    } else {
-      root.classList.add('dark-theme');
-      root.classList.remove('light-theme');
-    }
-  }, [settings.theme]);
+    root.classList.add('dark-theme');
+    root.classList.remove('light-theme');
+  }, []);
 
   // Calculate Time Context & Session Insight on Render/Mount
   const timeContext = getTimeContext();
@@ -337,6 +332,7 @@ function App() {
                 <CategorySelection
                   key="category"
                   onSelect={handleCategorySelect}
+                  onRestart={handleRestart}
                   reducedMotion={settings.reducedMotion}
                 />
               )}
@@ -345,6 +341,7 @@ function App() {
                      key="breathing"
                      onComplete={handleBreathingComplete}
                      onSkip={handleBreathingComplete}
+                     onRestart={handleRestart}
                   />
               )}
               {screen === 'canvas' && selectedCategory && (
@@ -352,6 +349,7 @@ function App() {
                   key="canvas"
                   category={selectedCategory}
                   onNext={handleCanvasNext}
+                  onRestart={handleRestart}
                   reducedMotion={settings.reducedMotion}
                   aiResponseStyle={settings.aiResponseStyle}
                   sentimentIndicatorEnabled={settings.sentimentIndicatorEnabled}

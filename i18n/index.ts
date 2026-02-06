@@ -20,7 +20,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    debug: import.meta.env.DEV,
+    debug: false,
 
     interpolation: {
       escapeValue: false, // React already escapes

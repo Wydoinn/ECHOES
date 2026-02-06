@@ -5,6 +5,7 @@ import { useSound } from './SoundManager';
 import { TransformationResult, EmotionalData } from '../types';
 import { haptics } from '../utils/haptics';
 import { generateRelicPDF } from '../utils/pdfGenerator';
+import { useTranslation } from 'react-i18next';
 
 interface FinalReleaseProps {
   onRestart: () => void;
@@ -20,6 +21,7 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { t } = useTranslation();
 
   const { playWhoosh, playSparkle, playChime } = useSound();
 
@@ -282,7 +284,7 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
                     disabled={isGeneratingPdf}
                     className="mb-20 text-[10px] uppercase tracking-[0.3em] text-[#d4af37]/40 hover:text-[#d4af37]/80 transition-all duration-500 border-b border-transparent hover:border-[#d4af37]/30 pb-1 disabled:opacity-30 font-medium"
                 >
-                    {isGeneratingPdf ? "Crafting Relic..." : "✦ Save Your Journey (PDF) ✦"}
+                    {isGeneratingPdf ? t('common.loading') : `✦ ${t('revelation.downloadRelic')} (PDF) ✦`}
                 </motion.button>
 
                 {/* The Hold Button */}
@@ -356,7 +358,7 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
 
                         <div className="text-center relative z-10 pointer-events-none">
                             <span className="block text-[9px] uppercase tracking-[0.4em] text-[#d4af37]/50 mb-3 font-medium">
-                                {isHolding ? "Releasing..." : "Hold to"}
+                                {isHolding ? t('common.loading') : "Hold to"}
                             </span>
                             <span className="font-serif-display text-2xl text-transparent bg-clip-text bg-gradient-to-br from-[#f4e5b2] via-[#d4af37] to-white/60 tracking-[0.25em] drop-shadow-md">
                                 RELEASE
