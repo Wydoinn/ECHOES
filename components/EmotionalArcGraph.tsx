@@ -17,7 +17,8 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc }) => {
 
   // Normalize data points
   const points = arc.segments.map((seg, i) => {
-    const x = padding + (i / (arc.segments.length - 1)) * (width - padding * 2);
+    const divisor = arc.segments.length > 1 ? arc.segments.length - 1 : 1;
+    const x = padding + (i / divisor) * (width - padding * 2);
     // Sentiment is -1 to 1. Map to height (inverted Y axis for SVG)
     // 1 -> padding (top)
     // -1 -> height - padding (bottom)
@@ -68,7 +69,7 @@ const EmotionalArcGraph: React.FC<EmotionalArcGraphProps> = ({ arc }) => {
         </div>
 
         <div className="relative w-full max-w-4xl aspect-[2/1] md:aspect-[8/3]">
-            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible" role="img" aria-label={`Emotional arc chart: ${arc.narrativeSummary}`}>
                 <defs>
                     <linearGradient id="lineGradient" x1="0%" y1="100%" x2="0%" y2="0%">
                         <stop offset="0%" stopColor="#8b5cf6" /> {/* Purple (Low/Negative) */}

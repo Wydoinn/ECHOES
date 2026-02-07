@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Category, EmotionalData, ImageAnalysis, AIResponseStyle } from '../types';
@@ -15,12 +15,14 @@ import { useSound } from '../components/SoundManager';
 import { haptics } from '../utils/haptics';
 import { draftManager, DraftData } from '../utils/draftManager';
 import { apiKeyManager } from '../utils/apiKeyManager';
+import { withRetry } from '../utils/retry';
+import { GEMINI_MODEL } from '../utils/constants';
 
 // ===========================================
 // API TIER CONFIGURATION
 // Set GEMINI_API_TIER in .env file ('free' or 'paid')
 // ===========================================
-const API_TIER = (process.env.GEMINI_API_TIER as 'free' | 'paid') || 'free';
+const API_TIER = (import.meta.env.VITE_GEMINI_API_TIER as 'free' | 'paid') || 'free';
 
 const API_CONFIG = {
   free: {
@@ -102,6 +104,18 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [imageAnalysis, setImageAnalysis] = useState<ImageAnalysis | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+
+  // Memoize object URL and revoke on change to prevent memory leaks
+  const imagePreviewUrl = useMemo(() => {
+    if (!image) return null;
+    return URL.createObjectURL(image);
+  }, [image]);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
 
   const [audio, setAudio] = useState<File | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
@@ -236,8 +250,8 @@ const EmotionalCanvas: React.FC<EmotionalCanvasProps> = ({
              promptText = `CONTEXT: User selected category "${category.title}". USER TEXT: "${currentText.slice(0, 1500)}...". Generate 3 gentle follow-up questions to deepen their reflection.`;
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+        const response = await withRetry(() => ai.models.generateContent({
+            model: GEMINI_MODEL,
             contents: { parts: [{ text: promptText }] },
             config: {
                 systemInstruction: `You are a gentle, creative journaling companion for ECHOES.
@@ -257,7 +271,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     }
                 }
             }
-        });
+        }));
 
         const result = JSON.parse(response.text || "{}");
         if (result.questions && Array.isArray(result.questions)) {
@@ -350,8 +364,8 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
             reader.onerror = error => reject(error);
         });
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+        const response = await withRetry(() => ai.models.generateContent({
+            model: GEMINI_MODEL,
             contents: {
                 parts: [
                     { inlineData: { mimeType: file.type, data: base64Data } },
@@ -375,7 +389,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
                     }
                 }
             }
-        });
+        }));
 
         const result = JSON.parse(response.text || "{}");
         setImageAnalysis(result);
@@ -408,13 +422,13 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
             reader.onerror = error => reject(error);
         });
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
+        const response = await withRetry(() => ai.models.generateContent({
+          model: GEMINI_MODEL,
           contents: { parts: [
              { inlineData: { mimeType: audioFile.type || 'audio/mp3', data: base64Data } },
              { text: "Transcribe this audio recording word-for-word. Output only the raw transcription text, nothing else." }
           ]}
-        });
+        }));
 
         const text = response.text;
         if (text) {
@@ -472,6 +486,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
     try {
         setError(null);
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStreamRef.current = stream;
         setAudioStream(stream);
         const recorder = new MediaRecorder(stream);
         setMediaRecorder(recorder);
@@ -490,18 +505,24 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
     }
   };
 
+  // Use ref for audio stream to avoid stale closures
+  const audioStreamRef = useRef<MediaStream | null>(null);
+
   const stopRecording = () => {
     if (mediaRecorder && isRecording) {
+        // Stop tracks immediately before async onstop handler
+        const currentStream = audioStreamRef.current;
         mediaRecorder.stop();
         mediaRecorder.onstop = () => {
             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
             const file = new File([audioBlob], "voice-note.mp3", { type: 'audio/mp3' });
             setAudio(file);
             transcribeAudio(file); // Trigger transcription
-            setAudioStream(null);
-            if (audioStream) {
-                audioStream.getTracks().forEach(track => track.stop());
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
             }
+            audioStreamRef.current = null;
+            setAudioStream(null);
         };
         setIsRecording(false);
     }
@@ -852,7 +873,7 @@ Output JSON: { "questions": ["...", "...", "..."] }`,
             <AnimatePresence>
                 {image && (
                     <motion.div initial={{scale: 0}} animate={{scale: 1}} exit={{scale: 0}} className="relative group min-w-[60px] h-[60px] rounded-lg overflow-hidden border border-white/20">
-                        <img src={URL.createObjectURL(image)} alt="upload" className="w-full h-full object-cover" />
+                        <img src={imagePreviewUrl || ''} alt="upload" className="w-full h-full object-cover" />
 
                         {/* Analysis Indicators */}
                         {isAnalyzingImage && (

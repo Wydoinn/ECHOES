@@ -35,26 +35,30 @@ const ClosureLetter: React.FC<ClosureLetterProps> = ({ isOpen, onClose, message 
 
   // Handle Typing Effect when Reading starts (only if not already read)
   useEffect(() => {
-    if (stage === 'reading' && !hasBeenReadRef.current) {
-        const timer = setTimeout(() => {
-            let i = 0;
-            const chunkSize = 5; // Reveal 5 characters at a time for better performance
-            const typingInterval = setInterval(() => {
-                if (i <= message.length) {
-                    setVisibleChars(i);
-                    i += chunkSize;
-                } else {
-                    setVisibleChars(message.length);
-                    clearInterval(typingInterval);
-                    setShowButton(true);
-                    hasBeenReadRef.current = true; // Mark as read
-                }
-            }, 30);
-            return () => clearInterval(typingInterval);
-        }, 1200); // Delay to allow paper to unfold
-        return () => clearTimeout(timer);
-    }
-    return undefined;
+    if (stage !== 'reading' || hasBeenReadRef.current) return undefined;
+
+    let typingInterval: ReturnType<typeof setInterval> | null = null;
+
+    const timer = setTimeout(() => {
+        let i = 0;
+        const chunkSize = 5; // Reveal 5 characters at a time for better performance
+        typingInterval = setInterval(() => {
+            if (i <= message.length) {
+                setVisibleChars(i);
+                i += chunkSize;
+            } else {
+                setVisibleChars(message.length);
+                if (typingInterval) clearInterval(typingInterval);
+                setShowButton(true);
+                hasBeenReadRef.current = true; // Mark as read
+            }
+        }, 30);
+    }, 1200); // Delay to allow paper to unfold
+
+    return () => {
+        clearTimeout(timer);
+        if (typingInterval) clearInterval(typingInterval);
+    };
   }, [stage, message]);
 
   // Keyboard Shortcuts
@@ -139,7 +143,7 @@ const ClosureLetter: React.FC<ClosureLetterProps> = ({ isOpen, onClose, message 
                             {/* Envelope Body (Back) */}
                             <div className="absolute inset-0 bg-gradient-to-b from-[#1a0b2e] to-[#0d0617] rounded-lg border border-[#d4af37]/20 shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex items-end justify-center">
                                 {/* Premium Texture */}
-                                <div className="absolute inset-0 opacity-15 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+                                <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(212,175,55,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                                 {/* Gold inner glow */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#d4af37]/5 to-transparent" />
                             </div>
@@ -248,7 +252,7 @@ const ClosureLetter: React.FC<ClosureLetterProps> = ({ isOpen, onClose, message 
                             }}
                         >
                             {/* Texture Overlay */}
-                            <div className="absolute inset-0 opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] rounded-sm" />
+                            <div className="absolute inset-0 opacity-40 pointer-events-none rounded-sm" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(44,24,16,0.03) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
 
                             <div className="relative z-10 flex flex-col h-full p-8 md:p-12 overflow-hidden">
                                 {/* Header - Fixed at top */}

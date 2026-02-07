@@ -127,8 +127,8 @@ describe('SafetyRail', () => {
   it('should display keyboard shortcut hint', () => {
     render(<SafetyRail onProceed={mockOnProceed} onCancel={mockOnCancel} />);
 
-    // The shortcut is shown in the MagneticButton
-    expect(screen.getByText('⌘+Enter')).toBeInTheDocument();
+    // jsdom userAgent is not Mac, so Ctrl is shown
+    expect(screen.getByText('Ctrl+Enter')).toBeInTheDocument();
   });
 
   it('should display Esc hint on go back button', () => {

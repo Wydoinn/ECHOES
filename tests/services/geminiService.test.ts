@@ -64,7 +64,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       const result = await geminiService.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: 'Hello' }], role: 'user' },
       });
 
@@ -85,7 +85,7 @@ describe('GeminiService', () => {
 
       await expect(
         geminiService.generateContent({
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3-flash-preview',
           contents: { parts: [{ text: 'Hello' }], role: 'user' },
         })
       ).rejects.toThrow('API error message');
@@ -104,7 +104,7 @@ describe('GeminiService', () => {
 
       await expect(
         geminiService.generateContent({
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3-flash-preview',
           contents: { parts: [{ text: 'Hello' }], role: 'user' },
         })
       ).rejects.toThrow('API request failed');
@@ -125,7 +125,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       await geminiService.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: 'Hello' }], role: 'user' },
         config: {
           systemInstruction: 'You are a helpful assistant.',
@@ -155,7 +155,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       await geminiService.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: 'Hello' }], role: 'user' },
         config: {
           responseMimeType: 'application/json',
@@ -185,7 +185,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       await geminiService.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: [
           { parts: [{ text: 'Hello' }], role: 'user' },
           { parts: [{ text: 'Hi there!' }], role: 'model' },
@@ -207,7 +207,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       const result = await geminiService.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: 'Hello' }], role: 'user' },
       });
 
@@ -231,7 +231,7 @@ describe('GeminiService', () => {
       const { geminiService } = await import('../../services/geminiService');
 
       const stream = await geminiService.generateContentStream({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: 'Hello' }], role: 'user' },
       });
 

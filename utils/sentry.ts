@@ -21,13 +21,12 @@ type SeverityLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
 
 /**
  * Initialize Sentry error tracking
- * Only initializes if DSN is configured
+ * Only initializes if DSN is configured.
+ * Silently skips when DSN is absent — this is expected in local dev
+ * and when Sentry is intentionally not used in production.
  */
 export function initSentry(): void {
   if (!SENTRY_DSN) {
-    if (IS_PRODUCTION) {
-      console.warn('Sentry DSN not configured. Error tracking is disabled.');
-    }
     return;
   }
 

@@ -85,7 +85,7 @@ describe('PrivacyPolicy', () => {
   it('should render contact section', () => {
     render(<PrivacyPolicy onBack={mockOnBack} />);
     expect(screen.getByText('Contact Us')).toBeInTheDocument();
-    expect(screen.getByText('privacy@echoes.app')).toBeInTheDocument();
+    expect(screen.getByText('santhoshs1881@gmail.com')).toBeInTheDocument();
   });
 
   it('should render link to Google AI Terms', () => {
@@ -164,7 +164,7 @@ describe('TermsOfService', () => {
   it('should render contact section', () => {
     render(<TermsOfService onBack={mockOnBack} />);
     expect(screen.getByText('Contact')).toBeInTheDocument();
-    expect(screen.getByText('legal@echoes.app')).toBeInTheDocument();
+    expect(screen.getByText('santhoshs1881@gmail.com')).toBeInTheDocument();
   });
 
   it('should have main content id for skip link', () => {

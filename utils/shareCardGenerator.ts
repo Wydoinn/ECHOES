@@ -27,7 +27,7 @@ export const generateShareCard = async (result: TransformationResult) => {
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  
+
   // 3. Draw ECHOES branding (Top Center)
   ctx.font = '200 28px Inter, sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
@@ -39,7 +39,7 @@ export const generateShareCard = async (result: TransformationResult) => {
   // Scale path (0-100) to fit nicely in the center-top
   const pathScale = 5; // 500px approx
   const offsetX = (size - (100 * pathScale)) / 2;
-  const offsetY = (size - (100 * pathScale)) / 2 - 80; 
+  const offsetY = (size - (100 * pathScale)) / 2 - 80;
 
   ctx.save();
   ctx.translate(offsetX, offsetY);
@@ -48,10 +48,10 @@ export const generateShareCard = async (result: TransformationResult) => {
   // Glow
   ctx.shadowColor = '#e879f9';
   ctx.shadowBlur = 20;
-  
+
   const pathString = result.visualMetaphorPath || "M 30 50 C 30 20 70 20 70 50 C 70 80 30 80 30 50 Z";
   const path = new Path2D(pathString);
-  
+
   // Outer Stroke (Purple/Pink Gradient simulation via strokeStyle)
   // Canvas strokeStyle gradient is relative to canvas, not path, so we use a color close to the middle of the gradient
   ctx.strokeStyle = '#d8b4fe'; // Light purple
@@ -59,7 +59,7 @@ export const generateShareCard = async (result: TransformationResult) => {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke(path);
-  
+
   // Inner Stroke (White hot)
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 0.4;
@@ -73,12 +73,12 @@ export const generateShareCard = async (result: TransformationResult) => {
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  
+
   const text = `"${result.visualMetaphor}"`;
   const maxWidth = size * 0.75;
   const lineHeight = 65;
   const centerX = size / 2;
-  const startY = size * 0.65; 
+  const startY = size * 0.65;
 
   const words = text.split(' ');
   let line = '';
@@ -117,6 +117,7 @@ export const generateShareCard = async (result: TransformationResult) => {
     link.click();
     document.body.removeChild(link);
   } catch (err) {
-    console.error("Failed to generate card", err);
+    console.error("Failed to generate share card:", err);
+    throw new Error('Failed to generate share card. Please try again.');
   }
 };

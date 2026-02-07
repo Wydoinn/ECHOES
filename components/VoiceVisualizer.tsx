@@ -32,15 +32,22 @@ const VoiceVisualizer: React.FC<VoiceVisualizerProps> = ({ stream }) => {
     const ctx = canvas.getContext('2d');
     let animationId: number;
 
+    // Set canvas size once and on resize, not every frame
+    const setCanvasSize = () => {
+      if (!canvas) return;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    setCanvasSize();
+    window.addEventListener('resize', setCanvasSize);
+
     const render = () => {
-      if (!ctx || !analyser) return;
+      if (!ctx || !analyser || !canvas) return;
 
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
       const width = canvas.width;
       const height = canvas.height;
       const centerX = width / 2;
@@ -98,6 +105,7 @@ const VoiceVisualizer: React.FC<VoiceVisualizerProps> = ({ stream }) => {
 
     return () => {
       cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', setCanvasSize);
       if (sourceRef.current) sourceRef.current.disconnect();
       if (audioContextRef.current) audioContextRef.current.close();
     };
@@ -105,7 +113,7 @@ const VoiceVisualizer: React.FC<VoiceVisualizerProps> = ({ stream }) => {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-      <canvas ref={canvasRef} className="w-full h-full max-w-[600px] max-h-[600px]" />
+      <canvas ref={canvasRef} aria-hidden="true" className="w-full h-full max-w-[600px] max-h-[600px]" />
     </div>
   );
 };

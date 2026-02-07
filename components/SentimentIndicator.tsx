@@ -7,6 +7,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI, Type } from "@google/genai";
 import { apiKeyManager } from '../utils/apiKeyManager';
+import { withRetry } from '../utils/retry';
+import { GEMINI_MODEL } from '../utils/constants';
 
 interface SentimentIndicatorProps {
   text: string;
@@ -57,12 +59,16 @@ const SentimentIndicator: React.FC<SentimentIndicatorProps> = ({
       clearTimeout(analysisTimeout.current);
     }
 
-    // Only analyze if text has changed meaningfully (at least 15 chars different)
-    if (lastAnalyzedText.current.length > 0 && Math.abs(text.length - lastAnalyzedText.current.length) < 15) {
-      return;
-    }
-
     analysisTimeout.current = setTimeout(async () => {
+      // Only analyze if text has changed meaningfully
+      if (
+        lastAnalyzedText.current.length > 0 &&
+        Math.abs(text.length - lastAnalyzedText.current.length) < 15 &&
+        lastAnalyzedText.current === text
+      ) {
+        return;
+      }
+
       setIsAnalyzing(true);
 
       try {
@@ -93,23 +99,21 @@ const SentimentIndicator: React.FC<SentimentIndicatorProps> = ({
             }
           }
 
-          if (bestCount > 0) {
-            const visuals = emotionVisuals[bestEmotion] ?? emotionVisuals.neutral ?? { color: '#9ca3af', icon: '○' };
-            setSentiment({
-              primaryEmotion: bestEmotion,
-              intensity: Math.min(1, bestCount * 0.25),
-              color: visuals.color,
-              icon: visuals.icon
-            });
-          }
+          const visuals = emotionVisuals[bestEmotion] ?? emotionVisuals.neutral ?? { color: '#9ca3af', icon: '○' };
+          setSentiment({
+            primaryEmotion: bestEmotion,
+            intensity: bestCount > 0 ? Math.min(1, bestCount * 0.25) : 0.1,
+            color: visuals.color,
+            icon: visuals.icon
+          });
           lastAnalyzedText.current = text;
           setIsAnalyzing(false);
           return;
         }
         const ai = new GoogleGenAI({ apiKey: userApiKey });
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
+        const response = await withRetry(() => ai.models.generateContent({
+          model: GEMINI_MODEL,
           contents: {
             parts: [{
               text: `Analyze the emotional tone of this text and identify the single PRIMARY emotion.
@@ -131,7 +135,7 @@ Output JSON: { "emotion": "...", "intensity": 0.0-1.0 }`
               }
             }
           }
-        });
+        }));
 
         const result = JSON.parse(response.text || '{}');
         const emotion = result.emotion?.toLowerCase() || 'neutral';

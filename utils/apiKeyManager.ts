@@ -1,6 +1,8 @@
 // API Key Management Utility
 // Handles storage, validation, and tier detection for user-provided Gemini API keys
 
+import { GEMINI_MODEL } from './constants';
+
 const API_KEY_STORAGE_KEY = 'echoes_gemini_api_key';
 const API_KEY_TIER_STORAGE_KEY = 'echoes_gemini_api_tier';
 
@@ -172,7 +174,7 @@ class ApiKeyManagerService {
     try {
       // Try to make a minimal generation request to check rate limits
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
         {
           method: 'POST',
           headers: {

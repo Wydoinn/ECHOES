@@ -3,7 +3,6 @@
  * Feature 14: PWA Support - Offline viewing of past sessions
  */
 
-const CACHE_NAME = 'echoes-v1';
 const STATIC_CACHE = 'echoes-static-v1';
 const DYNAMIC_CACHE = 'echoes-dynamic-v1';
 
@@ -119,15 +118,32 @@ self.addEventListener('sync', (event) => {
 // Push notification handler
 self.addEventListener('push', (event) => {
   if (event.data) {
-    const data = event.data.json();
+    let data;
+    try {
+      data = event.data.json();
+    } catch {
+      data = { title: 'ECHOES', body: event.data.text() };
+    }
+
+    // Validate URL — only allow same-origin or root paths
+    let notificationUrl = '/';
+    if (data.url) {
+      try {
+        const parsed = new URL(data.url, self.location.origin);
+        if (parsed.origin === self.location.origin) {
+          notificationUrl = parsed.pathname;
+        }
+      } catch {
+        notificationUrl = '/';
+      }
+    }
 
     const options = {
       body: data.body || 'Time for your emotional check-in',
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/badge-72x72.png',
+      icon: '/icons/icon.svg',
       vibrate: [100, 50, 100],
       data: {
-        url: data.url || '/'
+        url: notificationUrl
       },
       actions: [
         { action: 'open', title: 'Start Session' },

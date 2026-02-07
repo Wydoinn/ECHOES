@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import MagneticButton from './MagneticButton';
 
@@ -9,8 +9,15 @@ interface SafetyRailProps {
 }
 
 const SafetyRail: React.FC<SafetyRailProps> = ({ onProceed, onCancel }) => {
-  // Shortcuts
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+  const modKey = isMac ? '⌘' : 'Ctrl';
+
+  // Focus trap and shortcuts
   useEffect(() => {
+    // Focus the dialog when it mounts
+    dialogRef.current?.focus();
+
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
             onCancel();
@@ -26,6 +33,12 @@ const SafetyRail: React.FC<SafetyRailProps> = ({ onProceed, onCancel }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0617]/60 backdrop-blur-sm p-6">
       <motion.div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="safety-rail-title"
+        aria-describedby="safety-rail-desc"
+        tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -41,11 +54,11 @@ const SafetyRail: React.FC<SafetyRailProps> = ({ onProceed, onCancel }) => {
                 <span className="text-2xl">🌱</span>
             </div>
 
-            <h2 className="text-xl md:text-2xl font-serif-display font-medium text-white mb-4 tracking-wider uppercase">
+            <h2 id="safety-rail-title" className="text-xl md:text-2xl font-serif-display font-medium text-white mb-4 tracking-wider uppercase">
               A Gentle Reminder
             </h2>
 
-            <p className="text-white/60 font-light leading-relaxed mb-10 text-sm md:text-[15px]">
+            <p id="safety-rail-desc" className="text-white/60 font-light leading-relaxed mb-10 text-sm md:text-[15px]">
               ECHOES is a creative ritual for emotional release, not a substitute for professional therapy. If you are in crisis, please seek real-world support.
             </p>
 
@@ -54,7 +67,7 @@ const SafetyRail: React.FC<SafetyRailProps> = ({ onProceed, onCancel }) => {
                 <MagneticButton
                     onClick={onProceed}
                     className="w-full py-4 text-white hover:text-white bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20"
-                    shortcut="⌘+Enter"
+                    shortcut={`${modKey}+Enter`}
                 >
                     <span className="font-medium tracking-widest uppercase text-xs md:text-sm">
                         I Understand, Continue

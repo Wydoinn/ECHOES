@@ -57,6 +57,8 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
     }
   };
 
+  const particleRafRef = useRef<number | null>(null);
+
   const startParticleExplosion = () => {
     if (reducedMotion) return;
     const canvas = canvasRef.current;
@@ -185,12 +187,12 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
         });
 
         if (activeParticles > 0) {
-            requestAnimationFrame(animate);
+            particleRafRef.current = requestAnimationFrame(animate);
         } else {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
     };
-    animate();
+    particleRafRef.current = requestAnimationFrame(animate);
   };
 
   const triggerRelease = () => {
@@ -210,15 +212,24 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
   const handlePDFExport = async () => {
       if (!result || !originalData) return;
       setIsGeneratingPdf(true);
-      await generateRelicPDF(result, originalData);
-      setIsGeneratingPdf(false);
+      try {
+        await generateRelicPDF(result, originalData);
+      } catch (err) {
+        console.error('Failed to generate PDF:', err);
+        // Could show a toast notification here
+      } finally {
+        setIsGeneratingPdf(false);
+      }
   };
 
-  // Prevent context menu on long press
+  // Prevent context menu on long press (scoped to hold button only)
+  const holdButtonRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const el = holdButtonRef.current;
+    if (!el) return;
     const preventContext = (e: Event) => e.preventDefault();
-    window.addEventListener('contextmenu', preventContext);
-    return () => window.removeEventListener('contextmenu', preventContext);
+    el.addEventListener('contextmenu', preventContext);
+    return () => el.removeEventListener('contextmenu', preventContext);
   }, []);
 
   return (
@@ -269,6 +280,7 @@ const FinalRelease: React.FC<FinalReleaseProps> = ({ onRestart, result, original
 
                 {/* The Hold Button */}
                 <div
+                    ref={holdButtonRef}
                     className="relative w-80 h-80 flex items-center justify-center cursor-pointer touch-none select-none"
                     onMouseDown={startHold}
                     onMouseUp={stopHold}

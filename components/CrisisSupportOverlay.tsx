@@ -14,6 +14,10 @@ const CrisisSupportOverlay: React.FC<CrisisSupportOverlayProps> = ({ onSeekHelp,
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="crisis-title"
+      aria-describedby="crisis-desc"
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0617]/95 backdrop-blur-xl p-6"
     >
       <div className="max-w-md w-full text-center relative z-10">
@@ -38,11 +42,11 @@ const CrisisSupportOverlay: React.FC<CrisisSupportOverlayProps> = ({ onSeekHelp,
                </svg>
             </div>
 
-            <h2 className="text-2xl font-serif-display text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-white mb-4 tracking-wide">
+            <h2 id="crisis-title" className="text-2xl font-serif-display text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-white mb-4 tracking-wide">
               A Gentle Pause
             </h2>
 
-            <p className="text-purple-100/70 font-light leading-relaxed mb-8 text-sm md:text-base">
+            <p id="crisis-desc" className="text-purple-100/70 font-light leading-relaxed mb-8 text-sm md:text-base">
               It sounds like you are carrying something incredibly heavy right now. While ECHOES is here to help process emotions, it is not a substitute for professional crisis support.
               <br/><br/>
               If you are in pain or feel unsafe, please reach out to a human who can help. You matter.
@@ -58,14 +62,14 @@ const CrisisSupportOverlay: React.FC<CrisisSupportOverlayProps> = ({ onSeekHelp,
                 </span>
               </MagneticButton>
 
-              <button
-                onClick={onSeekHelp}
-                className="w-full py-3 text-xs text-purple-300/50 uppercase tracking-widest hover:text-purple-200/80 transition-colors"
+              <a
+                href="https://988lifeline.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 text-xs text-purple-300/50 uppercase tracking-widest hover:text-purple-200/80 transition-colors block text-center"
               >
-                <a href="https://www.google.com/search?q=suicide+hotline" target="_blank" rel="noopener noreferrer">
-                    Find Local Support
-                </a>
-              </button>
+                  Find Local Support (988 Lifeline)
+              </a>
             </div>
 
             <div className="mt-8 pt-6 border-t border-purple-500/10 w-full">

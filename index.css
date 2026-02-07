@@ -42,13 +42,60 @@
 
 /* Typography */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 h1, h2, h3 {
   font-family: 'Cinzel', serif;
+}
+
+.font-serif-display {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.02em;
+}
+
+.font-serif-body {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-handwriting {
+  font-family: 'Caveat', cursive;
+}
+
+/* Luxury gradient text utility */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 50%, var(--color-gold-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Premium shimmer animation */
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Elegant minimal scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
 }
 
 /* Scrollbar Styling */

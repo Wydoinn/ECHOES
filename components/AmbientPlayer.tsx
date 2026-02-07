@@ -6,6 +6,8 @@ import { useSound } from './SoundManager';
 import { SoundscapeParams } from '../types';
 import { copyShareableLinkToClipboard, parseSoundscapeFromURL } from '../utils/shareableSoundscapes';
 import { apiKeyManager } from '../utils/apiKeyManager';
+import { withRetry } from '../utils/retry';
+import { GEMINI_MODEL } from '../utils/constants';
 
 interface AmbientPlayerProps {
   emotion: string;
@@ -89,8 +91,8 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
             setTimeout(() => reject(new Error("Timeout")), 8000)
         );
 
-        const apiCall = ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+        const apiCall = withRetry(() => ai.models.generateContent({
+            model: GEMINI_MODEL,
             contents: { parts: [{
                 text: `Design an ambient soundscape for emotional healing.
 
@@ -137,7 +139,7 @@ const AmbientPlayer: React.FC<AmbientPlayerProps> = ({ emotion, reflection }) =>
                     }
                 }
             }
-        });
+        }));
 
         // Race API against timeout
         const response = await Promise.race([apiCall, timeoutPromise]);

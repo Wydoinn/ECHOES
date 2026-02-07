@@ -1,6 +1,9 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import * as Sentry from '@sentry/react';
+import { CONTACT_EMAIL } from '../utils/constants';
+
+const IS_PRODUCTION = import.meta.env.PROD;
 
 interface Props {
   children: ReactNode;
@@ -94,8 +97,8 @@ class ErrorBoundary extends Component<Props, State> {
               and you can try again.
             </p>
 
-            {/* Error Details (Collapsible) */}
-            {this.state.error && (
+            {/* Error Details (Collapsible - only in development) */}
+            {this.state.error && !IS_PRODUCTION && (
               <details className="mb-6 text-left">
                 <summary className="text-white/60 text-sm cursor-pointer hover:text-white/80 transition-colors">
                   Technical details
@@ -149,7 +152,7 @@ class ErrorBoundary extends Component<Props, State> {
             <p className="mt-8 text-white/30 text-sm">
               If this keeps happening, please{' '}
               <a
-                href="mailto:support@echoes.app"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="text-amber-400/70 hover:text-amber-400 underline underline-offset-2"
               >
                 contact support

@@ -65,8 +65,8 @@ describe('BreathingExercise', () => {
   it('should render the breathing exercise', () => {
     render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    // Initially shows breathing.inhale (i18n key)
-    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
+    // Initially shows breathing.inhale (i18n key) - multiple elements due to aria-live region
+    expect(screen.getAllByText('breathing.inhale').length).toBeGreaterThanOrEqual(1);
   });
 
   it('should render skip button', () => {
@@ -96,8 +96,8 @@ describe('BreathingExercise', () => {
   it('should start automatically after delay', async () => {
     render(<BreathingExercise onComplete={mockOnComplete} onSkip={mockOnSkip} onRestart={mockOnRestart} />);
 
-    // Initial state shows inhale
-    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
+    // Initial state shows inhale - multiple elements due to aria-live region
+    expect(screen.getAllByText('breathing.inhale').length).toBeGreaterThanOrEqual(1);
 
     // Advance past the start delay (1000ms)
     await act(async () => {
@@ -105,7 +105,7 @@ describe('BreathingExercise', () => {
     });
 
     // Should still show inhale (exercise has started)
-    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
+    expect(screen.getAllByText('breathing.inhale').length).toBeGreaterThanOrEqual(1);
   });
 
   it('should transition through phases', async () => {
@@ -116,22 +116,22 @@ describe('BreathingExercise', () => {
       vi.advanceTimersByTime(1000); // Start delay
     });
 
-    // Verify initial inhale phase
-    expect(screen.getByText('breathing.inhale')).toBeInTheDocument();
+    // Verify initial inhale phase - multiple elements due to aria-live region
+    expect(screen.getAllByText('breathing.inhale').length).toBeGreaterThanOrEqual(1);
 
     // Advance to hold phase (4000ms)
     await act(async () => {
       vi.advanceTimersByTime(4000);
     });
 
-    expect(screen.getByText('breathing.hold')).toBeInTheDocument();
+    expect(screen.getAllByText('breathing.hold').length).toBeGreaterThanOrEqual(1);
 
     // Advance to exhale phase (4000ms)
     await act(async () => {
       vi.advanceTimersByTime(4000);
     });
 
-    expect(screen.getByText('breathing.exhale')).toBeInTheDocument();
+    expect(screen.getAllByText('breathing.exhale').length).toBeGreaterThanOrEqual(1);
   });
 
   it('should complete after all cycles', async () => {

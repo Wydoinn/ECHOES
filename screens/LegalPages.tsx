@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { CONTACT_EMAIL } from '../utils/constants';
 
 interface LegalPageProps {
   onBack: () => void;
@@ -125,8 +126,8 @@ export const PrivacyPolicy: React.FC<LegalPageProps> = ({ onBack }) => {
             <h2 className="text-xl font-serif-display text-amber-200/90">Contact Us</h2>
             <p className="text-white/70">
               Questions about privacy? Reach out at{' '}
-              <a href="mailto:privacy@echoes.app" className="text-amber-400 hover:underline">
-                privacy@echoes.app
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-amber-400 hover:underline">
+                {CONTACT_EMAIL}
               </a>
             </p>
           </section>
@@ -245,8 +246,8 @@ export const TermsOfService: React.FC<LegalPageProps> = ({ onBack }) => {
             <h2 className="text-xl font-serif-display text-amber-200/90">Contact</h2>
             <p className="text-white/70">
               Questions about these terms? Contact us at{' '}
-              <a href="mailto:legal@echoes.app" className="text-amber-400 hover:underline">
-                legal@echoes.app
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-amber-400 hover:underline">
+                {CONTACT_EMAIL}
               </a>
             </p>
           </section>
@@ -255,5 +256,3 @@ export const TermsOfService: React.FC<LegalPageProps> = ({ onBack }) => {
     </div>
   );
 };
-
-export default { PrivacyPolicy, TermsOfService };

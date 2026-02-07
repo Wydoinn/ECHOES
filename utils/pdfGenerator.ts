@@ -64,11 +64,12 @@ const drawDiamond = (doc: jsPDF, x: number, y: number, size: number) => {
 };
 
 export const generateRelicPDF = async (result: TransformationResult, data: EmotionalData) => {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4"
-  });
+  try {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -554,4 +555,9 @@ export const generateRelicPDF = async (result: TransformationResult, data: Emoti
 
   // --- SAVE ---
   doc.save(`echoes-relic-${new Date().toISOString().split('T')[0]}.pdf`);
+
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    throw new Error('Failed to generate PDF. Please try again.');
+  }
 };

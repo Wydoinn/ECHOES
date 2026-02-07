@@ -108,7 +108,7 @@ const GuidedJournaling: React.FC<GuidedJournalingProps> = ({
   if (!isEnabled) return null;
 
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       {/* Progress Steps */}
       <div className="flex items-center justify-between mb-4 px-2">
         {steps.map((step, index) => {
@@ -197,7 +197,7 @@ const GuidedJournaling: React.FC<GuidedJournalingProps> = ({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={handleNext}
-              className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 text-white text-sm font-medium shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-shadow"
+              className="mt-4 mx-auto block px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-purple-600 text-white text-sm font-medium shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-shadow"
             >
               Continue to next reflection →
             </motion.button>

@@ -43,13 +43,14 @@ const formatTime = (timestamp: number): string => {
 
 const SessionHistoryDashboard: React.FC<SessionHistoryDashboardProps> = ({ isOpen, onClose, onResumeDraft }) => {
   const [activeTab, setActiveTab] = useState<'sessions' | 'drafts'>('sessions');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens
-  const sessions = useMemo(() => sessionMemory.getHistory().reverse(), [isOpen]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens
-  const drafts = useMemo(() => draftManager.getDraftHistory().reverse(), [isOpen]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens
-  const currentDraft = useMemo(() => draftManager.getCurrentDraft(), [isOpen]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens or after deletions
+  const sessions = useMemo(() => sessionMemory.getHistory().reverse(), [isOpen, refreshKey]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens or after deletions
+  const drafts = useMemo(() => draftManager.getDraftHistory().reverse(), [isOpen, refreshKey]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Refresh data when dialog opens or after deletions
+  const currentDraft = useMemo(() => draftManager.getCurrentDraft(), [isOpen, refreshKey]);
 
   const stats = useMemo(() => {
     const totalWords = sessions.reduce((sum, s) => sum + s.wordCount, 0);
@@ -76,6 +77,7 @@ const SessionHistoryDashboard: React.FC<SessionHistoryDashboardProps> = ({ isOpe
 
   const handleDeleteDraft = (id: string) => {
     draftManager.deleteDraft(id);
+    setRefreshKey(prev => prev + 1);
   };
 
   return (

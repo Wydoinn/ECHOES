@@ -2,8 +2,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Gemini API proxy to protect API key
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS headers - restrict to same-origin deployments
+  const allowedOrigins = [
+    'https://echoesss.vercel.app',
+    'https://echoes-emotion.vercel.app',
+  ];
+  const origin = req.headers.origin || '';
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin || '');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -30,11 +36,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing endpoint or body' });
     }
 
-    // Forward request to Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${endpoint}?key=${apiKey}`, {
+    // Forward request to Gemini API — use header instead of query param for API key
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify(body),
     });

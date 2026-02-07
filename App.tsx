@@ -16,6 +16,7 @@ import { getTimeContext } from './utils/timeAwareness';
 import { sessionMemory } from './utils/sessionMemory';
 import { draftManager, DraftData } from './utils/draftManager';
 import { apiKeyManager } from './utils/apiKeyManager';
+import { STORAGE_KEYS } from './utils/constants';
 
 // Lazy load screens for code splitting
 const Landing = lazy(() => import('./screens/Landing'));
@@ -139,14 +140,27 @@ function App() {
 
   const handleCategorySelect = (category: Category) => {
     setPendingCategory(category);
+
+    // Show safety rail only once per calendar day (or on first visit)
+    const lastShown = localStorage.getItem(STORAGE_KEYS.SAFETY_RAIL_LAST_SHOWN);
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    if (lastShown === today) {
+      // Already shown today — skip directly to breathing
+      setSelectedCategory(category);
+      setScreen('breathing');
+      return;
+    }
     setShowSafetyRail(true);
   };
 
   const handleSafetyProceed = () => {
     setShowSafetyRail(false);
+    // Record that the reminder was shown today
+    const today = new Date().toISOString().slice(0, 10);
+    localStorage.setItem(STORAGE_KEYS.SAFETY_RAIL_LAST_SHOWN, today);
     if (pendingCategory) {
-        setSelectedCategory(pendingCategory);
-        setScreen('breathing');
+      setSelectedCategory(pendingCategory);
+      setScreen('breathing');
     }
   };
 
@@ -237,13 +251,20 @@ function App() {
   const handleOpenAnalytics = () => setShowAnalyticsDashboard(true);
 
   // Legal page navigation
+  // Only update previousScreen when navigating FROM a non-legal screen.
+  // This prevents the stale-state bug where opening Terms from Privacy
+  // overwrites previousScreen with 'privacy', making Privacy unclosable.
   const handleOpenPrivacy = () => {
-    setPreviousScreen(screen);
+    if (screen !== 'privacy' && screen !== 'terms') {
+      setPreviousScreen(screen);
+    }
     setScreen('privacy');
   };
 
   const handleOpenTerms = () => {
-    setPreviousScreen(screen);
+    if (screen !== 'privacy' && screen !== 'terms') {
+      setPreviousScreen(screen);
+    }
     setScreen('terms');
   };
 

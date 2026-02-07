@@ -104,21 +104,24 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({ color = "230, 210, 255"
         }
       });
 
-      requestAnimationFrame(draw);
+      animationId = requestAnimationFrame(draw);
     };
 
     resizeCanvas();
     initStars();
-    requestAnimationFrame(draw);
+    let animationId = requestAnimationFrame(draw);
 
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       resizeCanvas();
       initStars();
-    });
+    };
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [color]);
@@ -126,6 +129,7 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({ color = "230, 210, 255"
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className="fixed inset-0 w-full h-full pointer-events-none z-0 mix-blend-screen"
     />
   );

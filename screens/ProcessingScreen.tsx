@@ -14,6 +14,8 @@ import { sessionMemory } from '../utils/sessionMemory';
 import { styleSystemInstructions } from '../components/AIResponseStyleSelector';
 import { apiKeyManager } from '../utils/apiKeyManager';
 import HomeButton from '../components/HomeButton';
+import { withRetry } from '../utils/retry';
+import { GEMINI_MODEL } from '../utils/constants';
 
 interface ProcessingScreenProps {
   data: EmotionalData;
@@ -262,8 +264,8 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ data, onComplete, o
             }
 
             // --- STEP 1: SAFETY CHECK ---
-            const safetyResponse = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
+            const safetyResponse = await withRetry(() => ai.models.generateContent({
+                model: GEMINI_MODEL,
                 contents: { parts: parts },
                 config: {
                     systemInstruction: `You are a safety triage system for an emotional release app called ECHOES.
@@ -297,9 +299,15 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
                         required: ["riskLevel", "showCrisisOverlay"]
                     }
                 }
-            });
+            }));
 
-            const safetyResult = JSON.parse(safetyResponse.text || "{}") as SafetyAssessment;
+            let safetyResult: SafetyAssessment;
+            try {
+              safetyResult = JSON.parse(safetyResponse.text || "{}") as SafetyAssessment;
+            } catch {
+              // If safety check JSON is malformed, treat as low risk and continue
+              safetyResult = { riskLevel: 'low', modelRationale: 'Safety check parse error', showCrisisOverlay: false };
+            }
 
             if (safetyResult.showCrisisOverlay || safetyResult.riskLevel === 'high') {
                 isUnsafeRef.current = true;
@@ -395,8 +403,8 @@ Only set showCrisisOverlay to true for actionable, immediate crisis signals.`,
             }
 
             // STREAMING REQUEST
-            const ritualStream = await ai.models.generateContentStream({
-              model: 'gemini-3-flash-preview',
+            const ritualStream = await withRetry(() => ai.models.generateContentStream({
+              model: GEMINI_MODEL,
               contents: { parts: parts },
               config: {
                 systemInstruction: `You are ECHOES, an advanced emotional intelligence engine designed to facilitate deep psychological release and closure. You are an expert therapist, poet, and abstract artist.
@@ -459,7 +467,7 @@ Generate valid JSON only.`,
                   required: requiredFields
                 }
               }
-            });
+            }));
 
             // Accumulate stream chunks
             let fullText = '';
@@ -469,7 +477,12 @@ Generate valid JSON only.`,
 
             if (!fullText) throw new Error("No response from AI");
 
-            const resultJson = JSON.parse(fullText) as TransformationResult;
+            let resultJson: TransformationResult;
+            try {
+              resultJson = JSON.parse(fullText) as TransformationResult;
+            } catch {
+              throw new Error("The AI returned an invalid response. Please try again.");
+            }
 
             apiResultRef.current = resultJson;
             isApiCompleteRef.current = true;
@@ -483,6 +496,8 @@ Generate valid JSON only.`,
             const errorObj = err as { message?: string };
             if (errorObj.message?.includes('API key')) {
               errorMessage = "Please configure your Gemini API key in settings to continue.";
+            } else if (errorObj.message?.includes('503') || errorObj.message?.includes('UNAVAILABLE') || errorObj.message?.includes('overloaded')) {
+              errorMessage = "The AI model is currently overloaded. Please wait a moment and try again.";
             } else if (errorObj.message?.includes('429') || errorObj.message?.includes('quota') || errorObj.message?.includes('rate')) {
               errorMessage = "You've reached your API rate limit. Please wait a moment or upgrade your API plan.";
             } else if (errorObj.message?.includes('403') || errorObj.message?.includes('permission')) {
@@ -502,9 +517,13 @@ Generate valid JSON only.`,
   const handleRetry = () => {
       setError(null);
       isApiCompleteRef.current = false;
+      isUnsafeRef.current = false;
       apiResultRef.current = null;
       setPhase('shatter');
-      window.location.reload();
+      setCurrentText('');
+      setShowCrisisOverlay(false);
+      // Go back to canvas to let user retry from there instead of full page reload
+      onCancel();
   };
 
   return (

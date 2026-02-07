@@ -122,6 +122,11 @@ const BreathingExercise: React.FC<BreathingExerciseProps> = ({ onComplete, onSki
                   </motion.h2>
               </AnimatePresence>
 
+              {/* Screen reader announcement for phase changes */}
+              <div className="sr-only" role="status" aria-live="assertive" aria-atomic="true">
+                {phase === 'inhale' ? t('breathing.inhale') : phase === 'hold' ? t('breathing.hold') : t('breathing.exhale')}
+              </div>
+
               {/* Premium progress dots */}
               <div className="flex gap-2 mt-6">
                   {[...Array(TOTAL_CYCLES)].map((_, i) => (

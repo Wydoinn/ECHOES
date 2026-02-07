@@ -10,7 +10,7 @@
     <!-- Security: Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      script-src 'self' 'unsafe-inline';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       connect-src 'self' https://generativelanguage.googleapis.com https://*.vercel.app;
@@ -40,101 +40,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@200;300;400;500&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      :root {
-        --color-gold: #d4af37;
-        --color-gold-light: #f4e5b2;
-        --color-gold-dark: #9a7b2b;
-        --color-pearl: #f8f6f2;
-        --color-obsidian: #0d0617;
-        --color-amethyst: #9333ea;
-        --color-rose-quartz: #f472b6;
-      }
-
-      /* Dark Theme (default - only theme) */
-      .dark-theme {
-        --bg-primary: #0d0617;
-        --bg-secondary: #1a0b2e;
-        --text-primary: rgba(255, 255, 255, 0.9);
-        --text-muted: rgba(255, 255, 255, 0.5);
-        --border-color: rgba(255, 255, 255, 0.1);
-        --glass-bg: rgba(255, 255, 255, 0.03);
-      }
-
+      /* Critical inline styles for initial paint — avoid FOUC */
       body {
         margin: 0;
         padding: 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background-color: var(--color-obsidian);
+        background-color: #0d0617;
         color: white;
         overflow-x: hidden;
-        cursor: none;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-      }
-
-      /* Premium smooth scrolling */
-      html {
-        scroll-behavior: smooth;
-      }
-
-      /* Elegant minimal scrollbar */
-      ::-webkit-scrollbar {
-        width: 4px;
-        background: transparent;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: linear-gradient(to bottom, var(--color-gold), transparent);
-        border-radius: 4px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.02);
-      }
-
-      .font-serif-display {
-        font-family: 'Cinzel', serif;
-        letter-spacing: 0.02em;
-      }
-
-      .font-serif-body {
-        font-family: 'Cormorant Garamond', Georgia, serif;
-      }
-
-      .font-handwriting {
-        font-family: 'Caveat', cursive;
-      }
-
-      /* Premium text selection */
-      ::selection {
-        background: rgba(212, 175, 55, 0.3);
-        color: white;
-      }
-
-      /* Luxury gradient text utility */
-      .text-gradient-gold {
-        background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 50%, var(--color-gold-dark) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Premium shimmer animation */
-      @keyframes shimmer {
-        0% { background-position: -200% center; }
-        100% { background-position: 200% center; }
-      }
-
-      .animate-shimmer {
-        background-size: 200% auto;
-        animation: shimmer 3s linear infinite;
-      }
-
-      /* Luxury glow pulse */
-      @keyframes luxuryPulse {
-        0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), 0 0 60px rgba(147, 51, 234, 0.1); }
-        50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.4), 0 0 80px rgba(147, 51, 234, 0.2); }
       }
 
       /* Noscript fallback */
@@ -146,24 +60,12 @@
         min-height: 100vh;
         text-align: center;
         padding: 2rem;
-        background: var(--color-obsidian);
+        background: #0d0617;
         color: white;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.25",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
-    "jspdf": "https://esm.sh/jspdf@2.5.1"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
+    <link rel="stylesheet" href="/index.css">
+  </head>
   <body>
     <noscript>
       <div class="noscript-message">

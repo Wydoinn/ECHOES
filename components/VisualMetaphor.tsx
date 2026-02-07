@@ -16,24 +16,27 @@ const VisualMetaphor: React.FC<VisualMetaphorProps> = ({ description = "", pathD
   const [displayedDesc, setDisplayedDesc] = useState("");
 
   useEffect(() => {
-    if (description) {
-        let currentIndex = 0;
-        // Faster typing for this shorter text, start after initial animation
-        const timeout = setTimeout(() => {
-            const interval = setInterval(() => {
-                if (currentIndex < description.length) {
-                    setDisplayedDesc(description.slice(0, currentIndex + 1));
-                    currentIndex++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 30);
-            return () => clearInterval(interval);
-        }, 1500); // Wait for SVG to draw partially
+    if (!description) return undefined;
 
-        return () => clearTimeout(timeout);
-    }
-    return undefined;
+    let currentIndex = 0;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    // Faster typing for this shorter text, start after initial animation
+    const timeoutId = setTimeout(() => {
+        intervalId = setInterval(() => {
+            if (currentIndex < description.length) {
+                setDisplayedDesc(description.slice(0, currentIndex + 1));
+                currentIndex++;
+            } else {
+                if (intervalId) clearInterval(intervalId);
+            }
+        }, 30);
+    }, 1500); // Wait for SVG to draw partially
+
+    return () => {
+        clearTimeout(timeoutId);
+        if (intervalId) clearInterval(intervalId);
+    };
   }, [description]);
 
   return (

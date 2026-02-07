@@ -206,9 +206,9 @@ describe('shareCardGenerator', () => {
 
     const result = createMockResult();
 
-    await generateShareCard(result);
+    await expect(generateShareCard(result)).rejects.toThrow('Failed to generate share card. Please try again.');
 
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to generate card', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to generate share card:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 });

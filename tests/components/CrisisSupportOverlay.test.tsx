@@ -46,7 +46,7 @@ describe('CrisisSupportOverlay', () => {
   it('should render find local support link', () => {
     render(<CrisisSupportOverlay onSeekHelp={mockOnSeekHelp} onBack={mockOnBack} />);
 
-    expect(screen.getByText('Find Local Support')).toBeInTheDocument();
+    expect(screen.getByText(/Find Local Support/i)).toBeInTheDocument();
   });
 
   it('should render return to canvas button', () => {
@@ -75,8 +75,8 @@ describe('CrisisSupportOverlay', () => {
   it('should have link to suicide hotline search', () => {
     render(<CrisisSupportOverlay onSeekHelp={mockOnSeekHelp} onBack={mockOnBack} />);
 
-    const link = screen.getByText('Find Local Support').closest('a');
-    expect(link).toHaveAttribute('href', 'https://www.google.com/search?q=suicide+hotline');
+    const link = screen.getByText(/Find Local Support/i).closest('a');
+    expect(link).toHaveAttribute('href', 'https://988lifeline.org');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
