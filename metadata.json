@@ -1,0 +1,7 @@
+{
+  "name": "ECHOES",
+  "description": "A cinematic Gemini 3 Pro ritual transforming grief and unspoken emotions into healing through insights, custom soundscapes, and visual rites.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

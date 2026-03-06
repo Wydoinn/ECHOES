@@ -1,0 +1,27 @@
+{
+  "name": "ECHOES — Emotional Alchemy",
+  "short_name": "ECHOES",
+  "description": "Transform your emotions into art. A premium emotional wellness experience.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0617",
+  "theme_color": "#0d0617",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["health", "lifestyle", "wellness"],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
